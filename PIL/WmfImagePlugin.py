@@ -44,7 +44,7 @@ def short(c, o=0):
 def dword(c, o=0):
     return ord(c[o]) + (ord(c[o+1])<<8) + (ord(c[o+2])<<16) + (ord(c[o+3])<<24)
 
-def long(c, o=0):
+def int(c, o=0):
     return dword(c, o)
 
 #
@@ -94,15 +94,15 @@ class WmfStubImageFile(ImageFile.StubImageFile):
             if s[22:26] != "\x01\x00\t\x00":
                 raise SyntaxError("Unsupported WMF file format")
 
-        elif long(s) == 1 and s[40:44] == " EMF":
+        elif int(s) == 1 and s[40:44] == " EMF":
             # enhanced metafile
 
             # get bounding box
-            x0 = long(s, 8); y0 = long(s, 12)
-            x1 = long(s, 16); y1 = long(s, 20)
+            x0 = int(s, 8); y0 = int(s, 12)
+            x1 = int(s, 16); y1 = int(s, 20)
 
             # get frame (in 0.01 millimeter units)
-            frame = long(s, 24), long(s, 28), long(s, 32), long(s, 36)
+            frame = int(s, 24), int(s, 28), int(s, 32), int(s, 36)
 
             # normalize size to 72 dots per inch
             size = x1 - x0, y1 - y0

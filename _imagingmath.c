@@ -195,19 +195,27 @@ static PyMethodDef _functions[] = {
 static void
 install(PyObject *d, char* name, void* value)
 {
-    PyObject *v = PyInt_FromLong((long) value);
+    PyObject *v = PyLong_FromLong((long) value);
     if (!v || PyDict_SetItemString(d, name, v))
         PyErr_Clear();
     Py_XDECREF(v);
 }
 
-DL_EXPORT(void)
-init_imagingmath(void)
+static struct PyModuleDef _imagingmath_module = {
+	PyModuleDef_HEAD_INIT,	/* m_base */
+	"_imagingmath",			/* m_name */
+	NULL,					/* m_doc */
+	-1,						/* m_size */
+	_functions,				/* m_methods */
+};
+
+PyMODINIT_FUNC
+PyInit__imagingmath(void)
 {
     PyObject* m;
     PyObject* d;
 
-    m = Py_InitModule("_imagingmath", _functions);
+    m = PyModule_Create(&_imagingmath_module);
     d = PyModule_GetDict(m);
 
     install(d, "abs_I", abs_I);
@@ -253,4 +261,5 @@ init_imagingmath(void)
     install(d, "gt_F", gt_F);
     install(d, "ge_F", ge_F);
 
+	return m;
 }

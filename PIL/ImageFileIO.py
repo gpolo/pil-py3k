@@ -12,7 +12,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from StringIO import StringIO
+from io import StringIO
 
 ##
 # The <b>ImageFileIO</b> module can be used to read an image from a
@@ -40,8 +40,8 @@ class ImageFileIO(StringIO):
 
 if __name__ == "__main__":
 
-    import Image
+    from . import Image
     fp = open("/images/clenna.im", "rb")
     im = Image.open(ImageFileIO(fp))
     im.load() # make sure we can read the raster data
-    print im.mode, im.size
+    print(im.mode, im.size)

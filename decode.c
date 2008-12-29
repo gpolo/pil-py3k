@@ -58,7 +58,7 @@ typedef struct {
     PyObject* lock;
 } ImagingDecoderObject;
 
-staticforward PyTypeObject ImagingDecoderType;
+static PyTypeObject ImagingDecoderType;
 
 static ImagingDecoderObject*
 PyImaging_DecoderNew(int contextsize)
@@ -66,7 +66,7 @@ PyImaging_DecoderNew(int contextsize)
     ImagingDecoderObject *decoder;
     void *context;
 
-    ImagingDecoderType.ob_type = &PyType_Type;
+    Py_TYPE(&ImagingDecoderType) = &PyType_Type;
 
     decoder = PyObject_New(ImagingDecoderObject, &ImagingDecoderType);
     if (decoder == NULL)
@@ -188,26 +188,36 @@ static struct PyMethodDef methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-static PyObject*  
-_getattr(ImagingDecoderObject* self, char* name)
-{
-    return Py_FindMethod(methods, (PyObject*) self, name);
-}
-
-statichere PyTypeObject ImagingDecoderType = {
-	PyObject_HEAD_INIT(NULL)
-	0,				/*ob_size*/
+static PyTypeObject ImagingDecoderType = {
+	PyVarObject_HEAD_INIT(NULL, 0)
 	"ImagingDecoder",		/*tp_name*/
 	sizeof(ImagingDecoderObject),	/*tp_size*/
 	0,				/*tp_itemsize*/
 	/* methods */
 	(destructor)_dealloc,		/*tp_dealloc*/
-	0,				/*tp_print*/
-	(getattrfunc)_getattr,		/*tp_getattr*/
-	0,				/*tp_setattr*/
-	0,				/*tp_compare*/
-	0,				/*tp_repr*/
-	0,                              /*tp_hash*/
+	0,                          /* tp_print */
+	0,                          /* tp_getattr*/
+	0,                          /* tp_setattr */
+	0,                          /* tp_compare */
+	0,                          /* tp_repr */
+	0,                          /* tp_as_number */
+	0,                          /* tp_as_sequence */
+	0,                          /* tp_as_mapping */
+	0,                          /* tp_hash */
+	0,                          /* tp_call */
+	0,                          /* tp_str */
+	PyObject_GenericGetAttr,    /* tp_getattro */
+	0,                          /* tp_setattro */
+	0,                          /* tp_as_buffer */
+	0,                          /* tp_flags */
+	0,                          /* tp_doc */
+	0,                          /* tp_traverse */
+	0,                          /* tp_clear */
+	0,                          /* tp_richcompare */
+	0,                          /* tp_weaklistoffset */
+	0,                          /* tp_iter */
+	0,                          /* tp_iternext */
+	methods,   		            /* tp_methods */
 };
 
 /* -------------------------------------------------------------------- */
@@ -498,8 +508,9 @@ PyImaging_RawDecoderNew(PyObject* self, PyObject* args)
     char* rawmode;
     int stride = 0;
     int ystep  = 1;
-    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &stride, &ystep))
+    if (!PyArg_ParseTuple(args, "ss|ii", &mode, &rawmode, &stride, &ystep)) {
 	return NULL;
+	}
 
     decoder = PyImaging_DecoderNew(sizeof(RAWSTATE));
     if (decoder == NULL)

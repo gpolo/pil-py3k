@@ -50,7 +50,7 @@ typedef struct {
     PyObject* lock;
 } ImagingEncoderObject;
 
-staticforward PyTypeObject ImagingEncoderType;
+static PyTypeObject ImagingEncoderType;
 
 static ImagingEncoderObject*
 PyImaging_EncoderNew(int contextsize)
@@ -58,7 +58,7 @@ PyImaging_EncoderNew(int contextsize)
     ImagingEncoderObject *encoder;
     void *context;
 
-    ImagingEncoderType.ob_type = &PyType_Type;
+    Py_TYPE(&ImagingEncoderType) = &PyType_Type;
 
     encoder = PyObject_New(ImagingEncoderObject, &ImagingEncoderType);
     if (encoder == NULL)
@@ -111,15 +111,15 @@ _encode(ImagingEncoderObject* encoder, PyObject* args)
     if (!PyArg_ParseTuple(args, "|i", &bufsize))
 	return NULL;
 
-    buf = PyString_FromStringAndSize(NULL, bufsize);
+    buf = PyBytes_FromStringAndSize(NULL, bufsize);
     if (!buf)
 	return NULL;
 
     status = encoder->encode(encoder->im, &encoder->state,
-			     (UINT8*) PyString_AsString(buf), bufsize);
+			     (UINT8*) PyBytes_AsString(buf), bufsize);
 
     /* adjust string length to avoid slicing in encoder */
-    if (_PyString_Resize(&buf, (status > 0) ? status : 0) < 0)
+    if (_PyBytes_Resize(&buf, (status > 0) ? status : 0) < 0)
         return NULL;
 
     result = Py_BuildValue("iiO", status, encoder->state.errcode, buf);
@@ -246,26 +246,36 @@ static struct PyMethodDef methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-static PyObject*  
-_getattr(ImagingEncoderObject* self, char* name)
-{
-    return Py_FindMethod(methods, (PyObject*) self, name);
-}
-
-statichere PyTypeObject ImagingEncoderType = {
-	PyObject_HEAD_INIT(NULL)
-	0,				/*ob_size*/
+static PyTypeObject ImagingEncoderType = {
+	PyVarObject_HEAD_INIT(NULL, 0)
 	"ImagingEncoder",		/*tp_name*/
 	sizeof(ImagingEncoderObject),	/*tp_size*/
 	0,				/*tp_itemsize*/
 	/* methods */
 	(destructor)_dealloc,		/*tp_dealloc*/
 	0,				/*tp_print*/
-	(getattrfunc)_getattr,		/*tp_getattr*/
-	0,				/*tp_setattr*/
-	0,				/*tp_compare*/
-	0,				/*tp_repr*/
-	0,                              /*tp_hash*/
+	0,                          /* tp_getattr*/
+	0,                          /* tp_setattr */
+	0,                          /* tp_compare */
+	0,                          /* tp_repr */
+	0,                          /* tp_as_number */
+	0,                          /* tp_as_sequence */
+	0,                          /* tp_as_mapping */
+	0,                          /* tp_hash */
+	0,                          /* tp_call */
+	0,                          /* tp_str */
+	PyObject_GenericGetAttr,    /* tp_getattro */
+	0,                          /* tp_setattro */
+	0,                          /* tp_as_buffer */
+	0,                          /* tp_flags */
+	0,                          /* tp_doc */
+	0,                          /* tp_traverse */
+	0,                          /* tp_clear */
+	0,                          /* tp_richcompare */
+	0,                          /* tp_weaklistoffset */
+	0,                          /* tp_iter */
+	0,                          /* tp_iternext */
+	methods,                    /* tp_methods */
 };
 
 /* -------------------------------------------------------------------- */

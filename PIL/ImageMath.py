@@ -38,7 +38,7 @@ class _Operand:
             elif im1.im.mode in ("I", "F"):
                 return im1.im
             else:
-                raise ValueError, "unsupported mode: %s" % im1.im.mode
+                raise ValueError("unsupported mode: %s" % im1.im.mode)
         else:
             # argument was a constant
             if _isconstant(im1) and self.im.mode in ("1", "L", "I"):
@@ -55,7 +55,7 @@ class _Operand:
             try:
                 op = getattr(_imagingmath, op+"_"+im1.mode)
             except AttributeError:
-                raise TypeError, "bad operand type for '%s'" % op
+                raise TypeError("bad operand type for '%s'" % op)
             _imagingmath.unop(op, out.im.id, im1.im.id)
         else:
             # binary operation
@@ -65,7 +65,7 @@ class _Operand:
                 if im1.mode != "F": im1 = im1.convert("F")
                 if im2.mode != "F": im2 = im2.convert("F")
                 if im1.mode != im2.mode:
-                    raise ValueError, "mode mismatch"
+                    raise ValueError("mode mismatch")
             if im1.size != im2.size:
                 # crop both arguments to a common size
                 size = (min(im1.size[0], im2.size[0]),
@@ -79,12 +79,12 @@ class _Operand:
             try:
                 op = getattr(_imagingmath, op+"_"+im1.mode)
             except AttributeError:
-                raise TypeError, "bad operand type for '%s'" % op
+                raise TypeError("bad operand type for '%s'" % op)
             _imagingmath.binop(op, out.im.id, im1.im.id, im2.im.id)
         return _Operand(out)
 
     # unary operators
-    def __nonzero__(self):
+    def __bool__(self):
         # an image is "true" if it contains at least one non-zero pixel
         return self.im.getbbox() is not None
     def __abs__(self):
@@ -175,7 +175,7 @@ def imagemath_convert(self, mode):
     return _Operand(self.im.convert(mode))
 
 ops = {}
-for k, v in globals().items():
+for k, v in list(globals().items()):
     if k[:10] == "imagemath_":
         ops[k[10:]] = v
 
@@ -195,12 +195,12 @@ def eval(expression, _dict={}, **kw):
     args = ops.copy()
     args.update(_dict)
     args.update(kw)
-    for k, v in args.items():
+    for k, v in list(args.items()):
         if hasattr(v, "im"):
             args[k] = _Operand(v)
 
-    import __builtin__
-    out =__builtin__.eval(expression, args)
+    import builtins
+    out =builtins.eval(expression, args)
     try:
         return out.im
     except AttributeError:

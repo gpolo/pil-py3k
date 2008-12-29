@@ -17,7 +17,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+from . import Image
 
 ##
 # The <b>ImageWin</b> module contains support to create and display
@@ -179,7 +179,7 @@ class Window:
             )
 
     def __dispatcher(self, action, *args):
-        return apply(getattr(self, "ui_handle_" + action), args)
+        return getattr(self, "ui_handle_" + action)(*args)
 
     def ui_handle_clear(self, dc, x0, y0, x1, y1):
         pass

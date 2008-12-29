@@ -12,8 +12,7 @@ import ImageMath
 
 try:
     Image.core.ping
-except ImportError, v:
-    print "***", v
+except ImportError as v:
     sys.exit()
 except AttributeError:
     pass
@@ -54,11 +53,11 @@ def testimage():
     or you call the "load" method:
 
     >>> im = Image.open("Images/lena.ppm")
-    >>> print im.im # internal image attribute
+    >>> print(im.im) # internal image attribute
     None
     >>> a = im.load()
     >>> type(im.im)
-    <type 'ImagingCore'>
+    <class 'ImagingCore'>
 
     You can apply many different operations on images.  Most
     operations return a new image:
@@ -86,13 +85,13 @@ def testimage():
     2
     >>> len(im.histogram())
     768
-    >>> _info(im.point(range(256)*3))
+    >>> _info(im.point(list(range(256))*3))
     (None, 'RGB', (128, 128))
     >>> _info(im.resize((64, 64)))
     (None, 'RGB', (64, 64))
     >>> _info(im.rotate(45))
     (None, 'RGB', (128, 128))
-    >>> map(_info, im.split())
+    >>> list(map(_info, im.split()))
     [(None, 'L', (128, 128)), (None, 'L', (128, 128)), (None, 'L', (128, 128))]
     >>> len(im.convert("1").tobitmap())
     10456
@@ -156,6 +155,6 @@ if __name__ == "__main__":
     import doctest, selftest
     status = doctest.testmod(selftest)
     if status[0]:
-        print "*** %s tests of %d failed." % status
+        print("*** %s tests of %d failed." % status)
     else:
-        print "%s tests passed." % status[1]
+        print("%s tests passed." % status[1])

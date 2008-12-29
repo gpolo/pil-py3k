@@ -19,14 +19,13 @@
 __version__ = "0.2"
 
 import Image, ImageFile, ImagePalette
-import string
 
 
 def i16(c):
-    return ord(c[0]) + (ord(c[1])<<8)
+    return c[0] + (c[1] << 8)
 
 def i32(c):
-    return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
+    return c[0] + (c[1] << 8) + (c[2] << 16) + (c[3] << 24)
 
 #
 # decoder
@@ -49,7 +48,7 @@ class FliImageFile(ImageFile.ImageFile):
         s = self.fp.read(128)
         magic = i16(s[4:6])
         if magic not in [0xAF11, 0xAF12]:
-            raise SyntaxError, "not an FLI/FLC file"
+            raise SyntaxError("not an FLI/FLC file")
 
         # image characteristics
         self.mode = "P"
@@ -62,7 +61,7 @@ class FliImageFile(ImageFile.ImageFile):
         self.info["duration"] = duration
 
         # look for palette
-        palette = map(lambda a: (a,a,a), range(256))
+        palette = [(a,a,a) for a in list(range(256))]
 
         s = self.fp.read(16)
 
@@ -81,8 +80,8 @@ class FliImageFile(ImageFile.ImageFile):
             elif i16(s[4:6]) == 4:
                 self._palette(palette, 0)
 
-        palette = map(lambda (r,g,b): chr(r)+chr(g)+chr(b), palette)
-        self.palette = ImagePalette.raw("RGB", string.join(palette, ""))
+        palette = [chr(r_g_b[0])+chr(r_g_b[1])+chr(r_g_b[2]) for r_g_b in palette]
+        self.palette = ImagePalette.raw("RGB", "".join(palette))
 
         # set things up to decode first frame
         self.frame = -1
@@ -111,7 +110,7 @@ class FliImageFile(ImageFile.ImageFile):
     def seek(self, frame):
 
         if frame != self.frame + 1:
-            raise ValueError, "cannot seek to frame %d" % frame
+            raise ValueError("cannot seek to frame %d" % frame)
         self.frame = frame
 
         # move to next frame

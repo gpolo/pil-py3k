@@ -44,7 +44,7 @@ typedef struct {
     ImagingDIB dib;
 } ImagingDisplayObject;
 
-staticforward PyTypeObject ImagingDisplayType;
+static PyTypeObject ImagingDisplayType;
 
 static ImagingDisplayObject*
 _new(const char* mode, int xsize, int ysize)
@@ -222,7 +222,8 @@ _getattr(ImagingDisplayObject* self, char* name)
 {
     PyObject* res;
 
-    res = Py_FindMethod(methods, (PyObject*) self, name);
+    res = PyObject_GenericGetAttr((PyObject *)self,
+			PyUnicode_FromString(name));
     if (res)
 	return res;
     PyErr_Clear();
@@ -234,20 +235,36 @@ _getattr(ImagingDisplayObject* self, char* name)
     return NULL;
 }
 
-statichere PyTypeObject ImagingDisplayType = {
-	PyObject_HEAD_INIT(NULL)
-	0,				/*ob_size*/
+static PyTypeObject ImagingDisplayType = {
+	PyVarObject_HEAD_INIT(NULL)
 	"ImagingDisplay",		/*tp_name*/
 	sizeof(ImagingDisplayObject),	/*tp_size*/
 	0,				/*tp_itemsize*/
 	/* methods */
 	(destructor)_delete,		/*tp_dealloc*/
-	0,				/*tp_print*/
-	(getattrfunc)_getattr,		/*tp_getattr*/
-	0,				/*tp_setattr*/
-	0,				/*tp_compare*/
-	0,				/*tp_repr*/
-	0,                              /*tp_hash*/
+	0,                          /* tp_print */
+	(getattrfunc)_getattr,      /* tp_getattr*/
+	0,                          /* tp_setattr */
+	0,                          /* tp_compare */
+	0,                          /* tp_repr */
+	0,                          /* tp_as_number */
+	0,                          /* tp_as_sequence */
+	0,                          /* tp_as_mapping */
+	0,                          /* tp_hash */
+	0,                          /* tp_call */
+	0,                          /* tp_str */
+	0,                          /* tp_getattro */
+	0,                          /* tp_setattro */
+	0,                          /* tp_as_buffer */
+	0,                          /* tp_flags */
+	0,                          /* tp_doc */
+	0,                          /* tp_traverse */
+	0,                          /* tp_clear */
+	0,                          /* tp_richcompare */
+	0,                          /* tp_weaklistoffset */
+	0,                          /* tp_iter */
+	0,                          /* tp_iternext */
+	methods,  		            /* tp_methods */
 };
 
 PyObject*

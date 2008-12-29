@@ -18,6 +18,7 @@
 #
 
 import Image, ImageFilter
+from functools import reduce
 
 class _Enhance:
 

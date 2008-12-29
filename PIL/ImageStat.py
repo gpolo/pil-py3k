@@ -21,8 +21,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+from . import Image
 import operator, math
+from functools import reduce
 
 ##
 # The <b>ImageStat</b> module calculates global statistics for an
@@ -53,13 +54,13 @@ class Stat:
         except AttributeError:
             self.h = image_or_list # assume it to be a histogram list
         if type(self.h) != type([]):
-            raise TypeError, "first argument must be image or list"
-        self.bands = range(len(self.h) / 256)
+            raise TypeError("first argument must be image or list")
+        self.bands = list(list(range(len(self.h) / 256)))
 
     def __getattr__(self, id):
         "Calculate missing attribute"
         if id[:4] == "_get":
-            raise AttributeError, id
+            raise AttributeError(id)
         # calculate missing attribute
         v = getattr(self, "_get" + id)()
         setattr(self, id, v)
@@ -169,11 +170,11 @@ if __name__ == "__main__":
 
     st = Stat(im)
 
-    print "extrema", st.extrema
-    print "sum    ", st.sum
-    print "mean   ", st.mean
-    print "median ", st.median
-    print "rms    ", st.rms
-    print "sum2   ", st.sum2
-    print "var    ", st.var
-    print "stddev ", st.stddev
+    print("extrema", st.extrema)
+    print("sum    ", st.sum)
+    print("mean   ", st.mean)
+    print("median ", st.median)
+    print("rms    ", st.rms)
+    print("sum2   ", st.sum2)
+    print("var    ", st.var)
+    print("stddev ", st.stddev)

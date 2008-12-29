@@ -25,7 +25,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+from . import Image
 import os, string, sys
 
 # FIXME: add support for pilfont2 format (see FontFile.py)
@@ -240,7 +240,7 @@ def load_path(filename):
 
 def load_default():
     "Load a default font."
-    from StringIO import StringIO
+    from io import StringIO
     import base64
     f = ImageFont()
     f._load_pilfont_data(
@@ -368,10 +368,10 @@ if __name__ == "__main__":
     # create font data chunk for embedding
     import base64, os, sys
     font = "../Images/courB08"
-    print "    f._load_pilfont_data("
-    print "         # %s" % os.path.basename(font)
-    print "         StringIO(base64.decodestring('''"
+    print("    f._load_pilfont_data(")
+    print("         # %s" % os.path.basename(font))
+    print("         StringIO(base64.decodestring('''")
     base64.encode(open(font + ".pil", "rb"), sys.stdout)
-    print "''')), Image.open(StringIO(base64.decodestring('''"
+    print("''')), Image.open(StringIO(base64.decodestring('''")
     base64.encode(open(font + ".pbm", "rb"), sys.stdout)
-    print "'''))))"
+    print("'''))))")

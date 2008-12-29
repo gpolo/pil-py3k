@@ -30,10 +30,10 @@ __version__ = "0.6"
 import Image, ImageFile, ImagePalette
 
 def i16(c,o):
-    return ord(c[o]) + (ord(c[o+1])<<8)
+    return c[o] + (c[o+1] << 8)
 
 def _accept(prefix):
-    return ord(prefix[0]) == 10 and ord(prefix[1]) in [0, 2, 3, 5]
+    return prefix[0] == 10 and prefix[1] in [0, 2, 3, 5]
 
 ##
 # Image plugin for Paintbrush images.
@@ -48,12 +48,12 @@ class PcxImageFile(ImageFile.ImageFile):
         # header
         s = self.fp.read(128)
         if not _accept(s):
-            raise SyntaxError, "not a PCX file"
+            raise SyntaxError("not a PCX file")
 
         # image
         bbox = i16(s,4), i16(s,6), i16(s,8)+1, i16(s,10)+1
         if bbox[2] <= bbox[0] or bbox[3] <= bbox[1]:
-            raise SyntaxError, "bad PCX image size"
+            raise SyntaxError("bad PCX image size")
 
         # format
         version = ord(s[1])
@@ -91,7 +91,7 @@ class PcxImageFile(ImageFile.ImageFile):
             rawmode = "RGB;L"
 
         else:
-            raise IOError, "unknown PCX mode"
+            raise IOError("unknown PCX mode")
 
         self.mode = mode
         self.size = bbox[2]-bbox[0], bbox[3]-bbox[1]
@@ -119,7 +119,7 @@ def _save(im, fp, filename, check=0):
     try:
         version, bits, planes, rawmode = SAVE[im.mode]
     except KeyError:
-        raise ValueError, "Cannot save %s images as PCX" % im.mode
+        raise ValueError("Cannot save %s images as PCX" % im.mode)
 
     if check:
         return check

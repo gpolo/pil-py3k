@@ -20,15 +20,14 @@
 __version__ = "0.3"
 
 
-import string
 import Image, ImageFile, ImagePalette
 
 
 def i16(c):
-    return ord(c[1]) + (ord(c[0])<<8)
+    return c[1] + (c[0] << 8)
 
 def i32(c):
-    return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24)
+    return c[3] + (c[2] << 8) + (c[1] << 16) + (c[0] << 24)
 
 
 def _accept(prefix):
@@ -47,7 +46,7 @@ class SunImageFile(ImageFile.ImageFile):
         # HEAD
         s = self.fp.read(32)
         if i32(s) != 0x59a66a95:
-            raise SyntaxError, "not an SUN raster file"
+            raise SyntaxError("not an SUN raster file")
 
         offset = 32
 
@@ -61,7 +60,7 @@ class SunImageFile(ImageFile.ImageFile):
         elif depth == 24:
             self.mode, rawmode = "RGB", "BGR"
         else:
-            raise SyntaxError, "unsupported mode"
+            raise SyntaxError("unsupported mode")
 
         compression = i32(s[20:24])
 

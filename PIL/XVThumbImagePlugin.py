@@ -19,7 +19,6 @@
 
 __version__ = "0.1"
 
-import string
 import Image, ImageFile, ImagePalette
 
 # standard color palette for thumbnails (RGB332)
@@ -27,7 +26,8 @@ PALETTE = ""
 for r in range(8):
     for g in range(8):
         for b in range(4):
-            PALETTE = PALETTE + (chr((r*255)/7)+chr((g*255)/7)+chr((b*255)/3))
+            PALETTE = PALETTE + (chr((r * 255) // 7) +
+                    chr((g * 255) // 7) + chr((b * 255) // 3))
 
 ##
 # Image plugin for XV thumbnail images.
@@ -42,16 +42,16 @@ class XVThumbImageFile(ImageFile.ImageFile):
         # check magic
         s = self.fp.read(6)
         if s != "P7 332":
-            raise SyntaxError, "not an XV thumbnail file"
+            raise SyntaxError("not an XV thumbnail file")
 
         # skip info comments
         while 1:
-            s = string.strip(self.fp.readline())
+            s = self.fp.readline().strip()
             if s == "#END_OF_COMMENTS":
                 break
 
         # read header line
-        s = string.split(self.fp.readline())
+        s = self.fp.readline().split()
 
         self.mode = "P"
         self.size = int(s[0]), int(s[1])

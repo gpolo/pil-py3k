@@ -357,17 +357,10 @@ __version__ = 0, 9, 6
 
 import types
 _FunctionType = types.FunctionType
-_ClassType    = types.ClassType
+_ClassType    = type
 _ModuleType   = types.ModuleType
-_StringType   = types.StringType
+_StringType   = bytes
 del types
-
-import string
-_string_find = string.find
-_string_join = string.join
-_string_split = string.split
-_string_rindex = string.rindex
-del string
 
 import re
 PS1 = ">>>"
@@ -391,7 +384,7 @@ def _extract_examples(s):
     isPS1, isPS2 = _isPS1, _isPS2
     isEmpty, isComment = _isEmpty, _isComment
     examples = []
-    lines = _string_split(s, "\n")
+    lines = s.split("\n")
     i, n = 0, len(lines)
     while i < n:
         line = lines[i]
@@ -405,7 +398,7 @@ def _extract_examples(s):
             continue
         lineno = i - 1
         if line[j] != " ":
-            raise ValueError("line " + `lineno` + " of docstring lacks "
+            raise ValueError("line " + repr(lineno) + " of docstring lacks "
                 "blank after " + PS1 + ": " + line)
         j = j + 1
         blanks = m.group(1)
@@ -419,7 +412,7 @@ def _extract_examples(s):
             if m:
                 if m.group(1) != blanks:
                     raise ValueError("inconsistent leading whitespace "
-                        "in line " + `i` + " of docstring: " + line)
+                        "in line " + repr(i) + " of docstring: " + line)
                 i = i + 1
             else:
                 break
@@ -429,7 +422,7 @@ def _extract_examples(s):
             # get rid of useless null line from trailing empty "..."
             if source[-1] == "":
                 del source[-1]
-            source = _string_join(source, "\n") + "\n"
+            source = "\n".join(source) + "\n"
         # suck up response
         if isPS1(line) or isEmpty(line):
             expect = ""
@@ -438,13 +431,13 @@ def _extract_examples(s):
             while 1:
                 if line[:nblanks] != blanks:
                     raise ValueError("inconsistent leading whitespace "
-                        "in line " + `i` + " of docstring: " + line)
+                        "in line " + repr(i) + " of docstring: " + line)
                 expect.append(line[nblanks:])
                 i = i + 1
                 line = lines[i]
                 if isPS1(line) or isEmpty(line):
                     break
-            expect = _string_join(expect, "\n") + "\n"
+            expect = "\n".join(expect) + "\n"
         examples.append( (source, expect, lineno) )
     return examples
 
@@ -456,7 +449,7 @@ class _SpoofOut:
     def write(self, s):
         self.buf.append(s)
     def get(self):
-        return _string_join(self.buf, "")
+        return "".join(self.buf)
     def clear(self):
         self.buf = []
     def flush(self):
@@ -471,7 +464,7 @@ def _tag_out(printer, *tag_msg_pairs):
         printer(tag + ":")
         msg_has_nl = msg[-1:] == "\n"
         msg_has_two_nl = msg_has_nl and \
-                        _string_find(msg, "\n") < len(msg) - 1
+                        msg.find("\n") < len(msg) - 1
         if len(tag) + len(msg) < 76 and not msg_has_two_nl:
             printer(" ")
         else:
@@ -486,7 +479,7 @@ def _tag_out(printer, *tag_msg_pairs):
 
 def _run_examples_inner(out, fakeout, examples, globs, verbose, name):
     import sys, traceback
-    OK, BOOM, FAIL = range(3)
+    OK, BOOM, FAIL = list(range(3))
     NADA = "nothing"
     stderr = _SpoofOut()
     failures = 0
@@ -496,16 +489,16 @@ def _run_examples_inner(out, fakeout, examples, globs, verbose, name):
                           ("Expecting", want or NADA))
         fakeout.clear()
         try:
-            exec compile(source, "<string>", "single") in globs
+            exec(compile(source, "<string>", "single"), globs)
             got = fakeout.get()
             state = OK
         except:
             # See whether the exception was expected.
-            if _string_find(want, "Traceback (innermost last):\n") == 0 or\
-               _string_find(want, "Traceback (most recent call last):\n") == 0:
+            if want.find("Traceback (innermost last):\n") == 0 or\
+               want.find("Traceback (most recent call last):\n") == 0:
                 # Only compare exception type and value - the rest of
                 # the traceback isn't necessary.
-                want = _string_split(want, '\n')[-2] + '\n'
+                want = want.split('\n')[-2] + '\n'
                 exc_type, exc_val, exc_tb = sys.exc_info()
                 got = traceback.format_exception_only(exc_type, exc_val)[0]
                 state = OK
@@ -526,7 +519,7 @@ def _run_examples_inner(out, fakeout, examples, globs, verbose, name):
         failures = failures + 1
         out("*" * 65 + "\n")
         _tag_out(out, ("Failure in example", source))
-        out("from line #" + `lineno` + " of " + name + "\n")
+        out("from line #" + repr(lineno) + " of " + name + "\n")
         if state == FAIL:
             _tag_out(out, ("Expected", want or NADA), ("Got", got))
         else:
@@ -692,7 +685,7 @@ see its docs for details.
             raise TypeError("Tester.__init__: must specify mod or globs")
         if mod is not None and type(mod) is not _ModuleType:
             raise TypeError("Tester.__init__: mod must be a module; " +
-                            `mod`)
+                            repr(mod))
         if globs is None:
             globs = mod.__dict__
         self.globs = globs
@@ -735,13 +728,13 @@ see its docs for details.
         """
 
         if self.verbose:
-            print "Running string", name
+            print("Running string", name)
         f = t = 0
         e = _extract_examples(s)
         if e:
             f, t = _run_examples(e, self.globs.copy(), self.verbose, name)
         if self.verbose:
-            print f, "of", t, "examples failed in string", name
+            print(f, "of", t, "examples failed in string", name)
         self.__record_outcome(name, f, t)
         return f, t
 
@@ -774,13 +767,13 @@ see its docs for details.
                 name = object.__name__
             except AttributeError:
                 raise ValueError("Tester.rundoc: name must be given "
-                    "when object.__name__ doesn't exist; " + `object`)
+                    "when object.__name__ doesn't exist; " + repr(object))
         if self.verbose:
-            print "Running", name + ".__doc__"
+            print("Running", name + ".__doc__")
         f, t = run_docstring_examples(object, self.globs.copy(),
                                       self.verbose, name)
         if self.verbose:
-            print f, "of", t, "examples failed in", name + ".__doc__"
+            print(f, "of", t, "examples failed in", name + ".__doc__")
         self.__record_outcome(name, f, t)
         if type(object) is _ClassType:
             f2, t2 = self.rundict(object.__dict__, name)
@@ -815,9 +808,9 @@ see its docs for details.
 
         if not hasattr(d, "items"):
             raise TypeError("Tester.rundict: d must support .items(); " +
-                            `d`)
+                            repr(d))
         f = t = 0
-        for thisname, value in d.items():
+        for thisname, value in list(d.items()):
             if type(value) in (_FunctionType, _ClassType):
                 f2, t2 = self.__runone(value, name + "." + thisname)
                 f = f + f2
@@ -836,7 +829,7 @@ see its docs for details.
         savepvt = self.isprivate
         try:
             self.isprivate = lambda *args: 0
-            for k, v in d.items():
+            for k, v in list(d.items()):
                 thisname = prefix + k
                 if type(v) is _StringType:
                     f, t = self.runstring(v, thisname)
@@ -845,7 +838,7 @@ see its docs for details.
                 else:
                     raise TypeError("Tester.run__test__: values in "
                             "dict must be strings, functions "
-                            "or classes; " + `v`)
+                            "or classes; " + repr(v))
                 failures = failures + f
                 tries = tries + t
         finally:
@@ -868,7 +861,7 @@ see its docs for details.
         passed = []
         failed = []
         totalt = totalf = 0
-        for x in self.name2ft.items():
+        for x in list(self.name2ft.items()):
             name, (f, t) = x
             assert f <= t
             totalt = totalt + t
@@ -881,27 +874,27 @@ see its docs for details.
                 failed.append(x)
         if verbose:
             if notests:
-                print len(notests), "items had no tests:"
+                print(len(notests), "items had no tests:")
                 notests.sort()
                 for thing in notests:
-                    print "   ", thing
+                    print("   ", thing)
             if passed:
-                print len(passed), "items passed all tests:"
+                print(len(passed), "items passed all tests:")
                 passed.sort()
                 for thing, count in passed:
-                    print " %3d tests in %s" % (count, thing)
+                    print(" %3d tests in %s" % (count, thing))
         if failed:
-            print len(failed), "items had failures:"
+            print(len(failed), "items had failures:")
             failed.sort()
             for thing, (f, t) in failed:
-                print " %3d of %3d in %s" % (f, t, thing)
+                print(" %3d of %3d in %s" % (f, t, thing))
         if verbose:
-            print totalt, "tests in", len(self.name2ft), "items."
-            print totalt - totalf, "passed and", totalf, "failed."
+            print(totalt, "tests in", len(self.name2ft), "items.")
+            print(totalt - totalf, "passed and", totalf, "failed.")
         if totalf:
-            print "***Test Failed***", totalf, "failures."
+            print("***Test Failed***", totalf, "failures.")
         elif verbose:
-            print "Test passed."
+            print("Test passed.")
         return totalf, totalt
 
     def merge(self, other):
@@ -948,19 +941,19 @@ see its docs for details.
         """
 
         d = self.name2ft
-        for name, (f, t) in other.name2ft.items():
-            if d.has_key(name):
-                print "*** Tester.merge: '" + name + "' in both" \
-                    " testers; summing outcomes."
+        for name, (f, t) in list(other.name2ft.items()):
+            if name in d:
+                print("*** Tester.merge: '" + name + "' in both" \
+                    " testers; summing outcomes.")
                 f2, t2 = d[name]
                 f = f + f2
                 t = t + t2
             d[name] = f, t
 
     def __record_outcome(self, name, f, t):
-        if self.name2ft.has_key(name):
-            print "*** Warning: '" + name + "' was tested before;", \
-                "summing outcomes."
+        if name in self.name2ft:
+            print("*** Warning: '" + name + "' was tested before;", \
+                "summing outcomes.")
             f2, t2 = self.name2ft[name]
             f = f + f2
             t = t + t2
@@ -968,7 +961,7 @@ see its docs for details.
 
     def __runone(self, target, name):
         if "." in name:
-            i = _string_rindex(name, ".")
+            i = name.rindex(".")
             prefix, base = name[:i], name[i+1:]
         else:
             prefix, base = "", base
@@ -1025,7 +1018,7 @@ def testmod(m, name=None, globs=None, verbose=None, isprivate=None,
     global master
 
     if type(m) is not _ModuleType:
-        raise TypeError("testmod: module required; " + `m`)
+        raise TypeError("testmod: module required; " + repr(m))
     if name is None:
         name = m.__name__
     tester = Tester(m, globs=globs, verbose=verbose, isprivate=isprivate)
@@ -1038,7 +1031,7 @@ def testmod(m, name=None, globs=None, verbose=None, isprivate=None,
         if testdict:
             if not hasattr(testdict, "items"):
                 raise TypeError("testmod: module.__test__ must support "
-                                ".items(); " + `testdict`)
+                                ".items(); " + repr(testdict))
             f, t = tester.run__test__(testdict, name + ".__test__")
             failures = failures + f
             tries = tries + t

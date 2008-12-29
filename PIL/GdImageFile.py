@@ -26,7 +26,7 @@
 __version__ = "0.1"
 
 import string
-import Image, ImageFile, ImagePalette
+from . import Image, ImageFile, ImagePalette
 
 def i16(c):
     return ord(c[1]) + (ord(c[0])<<8)
@@ -74,9 +74,9 @@ def open(fp, mode = "r"):
         raise ValueError("bad mode")
 
     if type(fp) == type(""):
-        import __builtin__
+        import builtins
         filename = fp
-        fp = __builtin__.open(fp, "rb")
+        fp = builtins.open(fp, "rb")
     else:
         filename = ""
 

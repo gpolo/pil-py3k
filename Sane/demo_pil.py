@@ -8,15 +8,15 @@
 import sys ; sys.path.append('../PIL')
 
 import sane
-print 'SANE version:', sane.init()
-print 'Available devices=', sane.get_devices()
+print('SANE version:', sane.init())
+print('Available devices=', sane.get_devices())
 
 s = sane.open(sane.get_devices()[0][0])
 
 s.mode = 'color'
 s.br_x=320. ; s.br_y=240.
 
-print 'Device parameters:', s.get_parameters()
+print('Device parameters:', s.get_parameters())
 
 # Initiate the scan
 s.start()

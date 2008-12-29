@@ -6,7 +6,7 @@
 # as a dynamically updated overlay
 #
 
-from Tkinter import *
+from tkinter import *
 import Image, ImageTk
 import sys
 

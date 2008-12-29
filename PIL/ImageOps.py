@@ -17,8 +17,9 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
+from . import Image
 import operator
+from functools import reduce
 
 ##
 # (New in 1.1.3) The <b>ImageOps</b> module contains a number of
@@ -43,7 +44,7 @@ def _border(border):
 
 def _color(color, mode):
     if Image.isStringType(color):
-        import ImageColor
+        from . import ImageColor
         color = ImageColor.getcolor(color, mode)
     return color
 
@@ -56,7 +57,7 @@ def _lut(image, lut):
             lut = lut + lut + lut
         return image.point(lut)
     else:
-        raise IOError, "not supported for this image mode"
+        raise IOError("not supported for this image mode")
 
 #
 # actions
@@ -124,7 +125,7 @@ def autocontrast(image, cutoff=0, ignore=None):
                 break
         if hi <= lo:
             # don't bother
-            lut.extend(range(256))
+            lut.extend(list(range(256)))
         else:
             scale = 255.0 / (hi - lo)
             offset = -lo * scale
@@ -209,13 +210,13 @@ def equalize(image, mask=None):
     h = image.histogram(mask)
     lut = []
     for b in range(0, len(h), 256):
-        histo = filter(None, h[b:b+256])
+        histo = [_f for _f in h[b:b+256] if _f]
         if len(histo) <= 1:
-            lut.extend(range(256))
+            lut.extend(list(list(range(256))))
         else:
             step = (reduce(operator.add, histo) - histo[-1]) / 255
             if not step:
-                lut.extend(range(256))
+                lut.extend(list(list(range(256))))
             else:
                 n = step / 2
                 for i in range(256):

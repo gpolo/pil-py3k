@@ -8,7 +8,7 @@
 # the image into a set of tiles.
 #
 
-from Tkinter import *
+from tkinter import *
 import Image, ImageTk
 import sys
 

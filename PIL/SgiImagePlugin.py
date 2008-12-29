@@ -20,15 +20,14 @@
 __version__ = "0.1"
 
 
-import string
 import Image, ImageFile
 
 
 def i16(c):
-    return ord(c[1]) + (ord(c[0])<<8)
+    return c[1] + (c[0] << 8)
 
 def i32(c):
-    return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24)
+    return c[3] + (c[2] << 8) + (c[1] << 16) + (c[0] << 24)
 
 
 def _accept(prefix):
@@ -47,7 +46,7 @@ class SgiImageFile(ImageFile.ImageFile):
         # HEAD
         s = self.fp.read(512)
         if i16(s) != 474:
-            raise SyntaxError, "not an SGI image file"
+            raise SyntaxError("not an SGI image file")
 
         # relevant header entries
         compression = ord(s[2])
@@ -61,7 +60,7 @@ class SgiImageFile(ImageFile.ImageFile):
         elif layout == (1, 3, 3):
             self.mode = "RGB"
         else:
-            raise SyntaxError, "unsupported SGI image mode"
+            raise SyntaxError("unsupported SGI image mode")
 
         # size
         self.size = i16(s[6:]), i16(s[8:])

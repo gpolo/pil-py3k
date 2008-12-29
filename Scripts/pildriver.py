@@ -481,7 +481,7 @@ class PILDriver:
             self.push(list[0])
             list = list[1:]
             if self.verbose:
-                print "Stack: " + `self.stack`
+                print("Stack: " + repr(self.stack))
             top = self.top()
             if type(top) != type(""):
                 continue;
@@ -507,15 +507,15 @@ if __name__ == '__main__':
     if len(sys.argv[1:]) > 0:
         driver.execute(sys.argv[1:])
     else:
-        print "PILDriver says hello."
+        print("PILDriver says hello.")
         while 1:
             try:
-                line = raw_input('pildriver> ');
+                line = input('pildriver> ');
             except EOFError:
-                print "\nPILDriver says goodbye."
+                print("\nPILDriver says goodbye.")
                 break
             driver.execute(string.split(line))
-            print driver.stack
+            print(driver.stack)
 
 # The following sets edit modes for GNU EMACS
 # Local Variables:

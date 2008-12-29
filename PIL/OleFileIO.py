@@ -36,7 +36,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-import string, StringIO
+import string, io
 
 
 def i16(c, o = 0):
@@ -65,7 +65,7 @@ VT_VECTOR=0x1000;
 # map property id to name (for debugging purposes)
 
 VT = {}
-for k, v in vars().items():
+for k, v in list(vars().items()):
     if k[:3] == "VT_":
         VT[v] = k
 
@@ -79,7 +79,7 @@ WORD_CLSID = "00020900-0000-0000-C000-000000000046"
 #
 # --------------------------------------------------------------------
 
-class _OleStream(StringIO.StringIO):
+class _OleStream(io.StringIO):
 
     """OLE2 Stream
 
@@ -109,7 +109,7 @@ class _OleStream(StringIO.StringIO):
 
         # print len(data), size
 
-        StringIO.StringIO.__init__(self, data[:size])
+        io.StringIO.__init__(self, data[:size])
 
 #
 # --------------------------------------------------------------------
@@ -208,12 +208,12 @@ class _OleDirectoryEntry:
         TYPES = ["(invalid)", "(storage)", "(stream)", "(lockbytes)",
                  "(property)", "(root)"]
 
-        print " "*tab + repr(self.name), TYPES[self.type],
+        print(" "*tab + repr(self.name), TYPES[self.type], end=' ')
         if self.type in (2, 5):
-            print self.size, "bytes",
-        print
+            print(self.size, "bytes", end=' ')
+        print()
         if self.type in (1, 5) and self.clsid:
-            print " "*tab + "{%s}" % self.clsid
+            print(" "*tab + "{%s}" % self.clsid)
 
         for kid in self.kids:
             kid.dump(tab + 2)
@@ -273,7 +273,7 @@ class OleFileIO:
         header = self.fp.read(512)
 
         if len(header) != 512 or header[:8] != MAGIC:
-            raise IOError, "not an OLE2 structured storage file"
+            raise IOError("not an OLE2 structured storage file")
 
         # file clsid (probably never used, so we don't store it)
         clsid = self._clsid(header[8:24])
@@ -307,7 +307,7 @@ class OleFileIO:
             if ix == -2 or ix == -1: # ix == 0xFFFFFFFEL or ix == 0xFFFFFFFFL:
                 break
             s = self.getsect(ix)
-            fat = fat + map(lambda i, s=s: i32(s, i), range(0, len(s), 4))
+            fat = fat + list(map(lambda i, s=s: i32(s, i), list(range(0, len(s), 4))))
         self.fat = fat
 
     def loadminifat(self):
@@ -316,7 +316,7 @@ class OleFileIO:
 
         s = self._open(self.minifatsect).read()
 
-        self.minifat = map(lambda i, s=s: i32(s, i), range(0, len(s), 4))
+        self.minifat = list(map(lambda i, s=s: i32(s, i), list(range(0, len(s), 4))))
 
     def getsect(self, sect):
         # Read given sector
@@ -329,7 +329,7 @@ class OleFileIO:
 
         # FIXME: some day, Python will provide an official way to handle
         # Unicode strings, but until then, this will have to do...
-        return filter(ord, s)
+        return list(filter(ord, s))
 
     def loaddirectory(self, sect):
         # Load the directory.  The directory is stored in a standard
@@ -385,7 +385,7 @@ class OleFileIO:
                 if kid.name == name:
                     break
             else:
-                raise IOError, "file not found"
+                raise IOError("file not found")
             node = kid
         return node.sid
 
@@ -423,7 +423,7 @@ class OleFileIO:
         slot = self._find(filename)
         name, type, sect, size, sids, clsid = self.sidlist[slot]
         if type != 2:
-            raise IOError, "this file is not a stream"
+            raise IOError("this file is not a stream")
         return self._open(sect, size)
 
     ##
@@ -477,10 +477,10 @@ class OleFileIO:
                 count = i32(s, offset+4)
                 value = self._unicode(s[offset+8:offset+8+count*2])
             elif type == VT_FILETIME:
-                value = long(i32(s, offset+4)) + (long(i32(s, offset+8))<<32)
+                value = int(i32(s, offset+4)) + (int(i32(s, offset+8))<<32)
                 # FIXME: this is a 64-bit int: "number of 100ns periods
                 # since Jan 1,1601".  Should map this to Python time
-                value = value / 10000000L # seconds
+                value = value / 10000000 # seconds
             elif type == VT_UI1:
                 value = ord(s[offset+4])
             elif type == VT_CLSID:
@@ -512,17 +512,17 @@ if __name__ == "__main__":
     for file in sys.argv[1:]:
         try:
             ole = OleFileIO(file)
-            print "-" * 68
-            print file
-            print "-" * 68
+            print("-" * 68)
+            print(file)
+            print("-" * 68)
             ole.dumpdirectory()
             for file in ole.listdir():
                 if file[-1][0] == "\005":
-                    print file
+                    print(file)
                     props = ole.getproperties(file)
-                    props = props.items()
+                    props = list(props.items())
                     props.sort()
                     for k, v in props:
-                        print "   ", k, v
-        except IOError, v:
-            print "***", "cannot read", file, "-", v
+                        print("   ", k, v)
+        except IOError as v:
+            print("***", "cannot read", file, "-", v)

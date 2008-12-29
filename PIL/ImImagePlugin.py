@@ -28,7 +28,7 @@
 
 __version__ = "0.7"
 
-import re, string
+import re
 import Image, ImageFile, ImagePalette
 
 
@@ -112,8 +112,8 @@ class ImImageFile(ImageFile.ImageFile):
         # Quick rejection: if there's not an LF among the first
         # 100 bytes, this is (probably) not a text header.
 
-        if not "\n" in self.fp.read(100):
-            raise SyntaxError, "not an IM file"
+        if not b"\n" in self.fp.read(100):
+            raise SyntaxError("not an IM file")
         self.fp.seek(0)
 
         n = 0
@@ -140,7 +140,7 @@ class ImImageFile(ImageFile.ImageFile):
             s = s + self.fp.readline()
 
             if len(s) > 100:
-                raise SyntaxError, "not an IM file"
+                raise SyntaxError("not an IM file")
 
             if s[-2:] == '\r\n':
                 s = s[:-2]
@@ -149,8 +149,8 @@ class ImImageFile(ImageFile.ImageFile):
 
             try:
                 m = split.match(s)
-            except re.error, v:
-                raise SyntaxError, "not an IM file"
+            except re.error as v:
+                raise SyntaxError("not an IM file")
 
             if m:
 
@@ -158,32 +158,32 @@ class ImImageFile(ImageFile.ImageFile):
 
                 # Convert value as appropriate
                 if k in [FRAMES, SCALE, SIZE]:
-                    v = string.replace(v, "*", ",")
-                    v = tuple(map(number, string.split(v, ",")))
+                    v = v.replace("*", ",")
+                    v = tuple(map(number, v.split(",")))
                     if len(v) == 1:
                         v = v[0]
-                elif k == MODE and OPEN.has_key(v):
+                elif k == MODE and v in OPEN:
                     v, self.rawmode = OPEN[v]
 
                 # Add to dictionary. Note that COMMENT tags are
                 # combined into a list of strings.
                 if k == COMMENT:
-                    if self.info.has_key(k):
+                    if k in self.info:
                         self.info[k].append(v)
                     else:
                         self.info[k] = [v]
                 else:
                     self.info[k] = v
 
-                if TAGS.has_key(k):
+                if k in TAGS:
                     n = n + 1
 
             else:
 
-                raise SyntaxError, "Syntax error in IM header: " + s
+                raise SyntaxError("Syntax error in IM header: " + s)
 
         if not n:
-            raise SyntaxError, "Not an IM file"
+            raise SyntaxError("Not an IM file")
 
         # Basic attributes
         self.size = self.info[SIZE]
@@ -193,9 +193,9 @@ class ImImageFile(ImageFile.ImageFile):
         while s and s[0] != chr(26):
             s = self.fp.read(1)
         if not s:
-            raise SyntaxError, "File truncated"
+            raise SyntaxError("File truncated")
 
-        if self.info.has_key(LUT):
+        if LUT in self.info:
             # convert lookup table to palette or lut attribute
             palette = self.fp.read(768)
             greyscale = 1 # greyscale palette
@@ -209,7 +209,7 @@ class ImImageFile(ImageFile.ImageFile):
             if self.mode == "L" or self.mode == "LA":
                 if greyscale:
                     if not linear:
-                        self.lut = map(ord, palette[:256])
+                        self.lut = list(map(ord, palette[:256]))
                 else:
                     if self.mode == "L":
                         self.mode = self.rawmode = "P"
@@ -218,7 +218,7 @@ class ImImageFile(ImageFile.ImageFile):
                     self.palette = ImagePalette.raw("RGB;L", palette)
             elif self.mode == "RGB":
                 if not greyscale or not linear:
-                    self.lut = map(ord, palette)
+                    self.lut = list(map(ord, palette))
 
         self.frame = 0
 
@@ -253,7 +253,7 @@ class ImImageFile(ImageFile.ImageFile):
     def seek(self, frame):
 
         if frame < 0 or frame >= self.info[FRAMES]:
-            raise EOFError, "seek outside sequence"
+            raise EOFError("seek outside sequence")
 
         if self.frame == frame:
             return
@@ -303,7 +303,7 @@ def _save(im, fp, filename, check=0):
     try:
         type, rawmode = SAVE[im.mode]
     except KeyError:
-        raise ValueError, "Cannot save %s images as IM" % im.mode
+        raise ValueError("Cannot save %s images as IM" % im.mode)
 
     try:
         frames = im.encoderinfo["frames"]

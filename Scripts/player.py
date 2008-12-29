@@ -3,7 +3,7 @@
 # $Id: player.py 2134 2004-10-06 08:55:20Z fredrik $
 #
 
-from Tkinter import *
+from tkinter import *
 import Image, ImageTk
 import sys
 
@@ -61,9 +61,9 @@ class UI(Label):
             duration = im.info["duration"]
         except KeyError:
             duration = 100
-        self.after(duration, self.next)
+        self.after(duration, self.__next__)
 
-    def next(self):
+    def __next__(self):
 
         if type(self.im) == type([]):
 
@@ -87,7 +87,7 @@ class UI(Label):
             duration = im.info["duration"]
         except KeyError:
             duration = 100
-        self.after(duration, self.next)
+        self.after(duration, self.__next__)
 
         self.update_idletasks()
 
@@ -98,7 +98,7 @@ class UI(Label):
 if __name__ == "__main__":
 
     if not sys.argv[1:]:
-        print "Syntax: python player.py imagefile(s)"
+        print("Syntax: python player.py imagefile(s)")
         sys.exit(1)
 
     filename = sys.argv[1]
@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) > 2:
         # list of images
-        print "loading..."
+        print("loading...")
         im = []
         for filename in sys.argv[1:]:
             im.append(Image.open(filename))

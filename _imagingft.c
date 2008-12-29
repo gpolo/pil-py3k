@@ -77,7 +77,7 @@ typedef struct {
     FT_Face face;
 } FontObject;
 
-staticforward PyTypeObject Font_Type;
+static PyTypeObject Font_Type;
 
 /* round a 26.6 pixel coordinate to the nearest larger integer */
 #define PIXEL(x) ((((x)+63) & -64)>>6)
@@ -151,25 +151,12 @@ getfont(PyObject* self_, PyObject* args, PyObject* kw)
 static int
 font_getchar(PyObject* string, int index, FT_ULong* char_out)
 {
-#if defined(HAVE_UNICODE)
-    if (PyUnicode_Check(string)) {
-        Py_UNICODE* p = PyUnicode_AS_UNICODE(string);
-        int size = PyUnicode_GET_SIZE(string);
-        if (index >= size)
-            return 0;
-        *char_out = p[index];
-        return 1;
-    }
-#endif
-    if (PyString_Check(string)) {
-        unsigned char* p = (unsigned char*) PyString_AS_STRING(string);
-        int size = PyString_GET_SIZE(string);
-        if (index >= size)
-            return 0;
-        *char_out = (unsigned char) p[index];
-        return 1;
-    }
-    return 0;
+    Py_UNICODE* p = PyUnicode_AS_UNICODE(string);
+    int size = PyUnicode_GET_SIZE(string);
+    if (index >= size)
+        return 0;
+    *char_out = p[index];
+    return 1;
 }
 
 static PyObject*
@@ -188,11 +175,7 @@ font_getsize(FontObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "O:getsize", &string))
         return NULL;
 
-#if defined(HAVE_UNICODE)
-    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
-#else
-    if (!PyString_Check(string)) {
-#endif
+    if (!PyUnicode_Check(string)) {
         PyErr_SetString(PyExc_TypeError, "expected string");
         return NULL;
     }
@@ -254,11 +237,7 @@ font_getabc(FontObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "O:getabc", &string))
         return NULL;
 
-#if defined(HAVE_UNICODE)
-    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
-#else
-    if (!PyString_Check(string)) {
-#endif
+    if (!PyUnicode_Check(string)) {
         PyErr_SetString(PyExc_TypeError, "expected string");
         return NULL;
     }
@@ -302,11 +281,7 @@ font_render(FontObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "Ol|i:render", &string, &id, &mask))
         return NULL;
 
-#if defined(HAVE_UNICODE)
-    if (!PyUnicode_Check(string) && !PyString_Check(string)) {
-#else
-    if (!PyString_Check(string)) {
-#endif
+    if (!PyUnicode_Check(string)) {
         PyErr_SetString(PyExc_TypeError, "expected string");
         return NULL;
     }
@@ -413,7 +388,8 @@ font_getattr(FontObject* self, char* name)
 {
     PyObject* res;
 
-    res = Py_FindMethod(font_methods, (PyObject*) self, name);
+    res = PyObject_GenericGetAttr((PyObject *)self,
+			PyUnicode_FromString(name));
 
     if (res)
         return res;
@@ -422,30 +398,51 @@ font_getattr(FontObject* self, char* name)
 
     /* attributes */
     if (!strcmp(name, "family"))
-        return PyString_FromString(self->face->family_name);
+        return PyUnicode_FromString(self->face->family_name);
     if (!strcmp(name, "style"))
-        return PyString_FromString(self->face->style_name);
+        return PyUnicode_FromString(self->face->style_name);
 
     if (!strcmp(name, "ascent"))
-        return PyInt_FromLong(PIXEL(self->face->size->metrics.ascender));
+        return PyLong_FromLong(PIXEL(self->face->size->metrics.ascender));
     if (!strcmp(name, "descent"))
-        return PyInt_FromLong(-PIXEL(self->face->size->metrics.descender));
+        return PyLong_FromLong(-PIXEL(self->face->size->metrics.descender));
 
     if (!strcmp(name, "glyphs"))
         /* number of glyphs provided by this font */
-        return PyInt_FromLong(self->face->num_glyphs);
+        return PyLong_FromLong(self->face->num_glyphs);
 
     PyErr_SetString(PyExc_AttributeError, name);
     return NULL;
 }
 
-statichere PyTypeObject Font_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0, "Font", sizeof(FontObject), 0,
+static PyTypeObject Font_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "Font", sizeof(FontObject), 0,
     /* methods */
     (destructor)font_dealloc, /* tp_dealloc */
-    0, /* tp_print */
-    (getattrfunc)font_getattr, /* tp_getattr */
+    0,                          /* tp_print */
+    (getattrfunc)font_getattr,	/* tp_getattr */
+    0,                          /* tp_setattr */
+    0,                          /* tp_compare */
+    0,                          /* tp_repr */
+    0,                          /* tp_as_number */
+    0,                          /* tp_as_sequence */
+    0,                          /* tp_as_mapping */
+    0,                          /* tp_hash */
+    0,                          /* tp_call */
+    0,                          /* tp_str */
+    0,                          /* tp_getattro */
+    0,                          /* tp_setattro */
+    0,                          /* tp_as_buffer */
+    0,                          /* tp_flags */
+    0,                          /* tp_doc */
+    0,                          /* tp_traverse */
+    0,                          /* tp_clear */
+    0,                          /* tp_richcompare */
+    0,                          /* tp_weaklistoffset */
+    0,                          /* tp_iter */
+    0,                          /* tp_iternext */
+    font_methods,               /* tp_methods */
 };
 
 static PyMethodDef _functions[] = {
@@ -453,11 +450,19 @@ static PyMethodDef _functions[] = {
     {NULL, NULL}
 };
 
-DL_EXPORT(void)
-init_imagingft(void)
+static struct PyModuleDef _imagingftmodule = {
+	PyModuleDef_HEAD_INIT,	/* m_base */
+	"_imagingft",			/* m_name */
+	NULL,					/* m_doc */
+	-1,						/* m_size */
+	_functions,				/* m_methods */
+};
+
+PyMODINIT_FUNC
+PyInit__imagingft(void)
 {
     /* Patch object type */
-    Font_Type.ob_type = &PyType_Type;
+    Py_TYPE(&Font_Type) = &PyType_Type;
 
-    Py_InitModule("_imagingft", _functions);
+    return PyModule_Create(&_imagingftmodule);
 }

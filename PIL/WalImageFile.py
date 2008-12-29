@@ -41,8 +41,8 @@ def open(filename):
     if hasattr(filename, "read"):
         fp = filename
     else:
-        import __builtin__
-        fp = __builtin__.open(filename, "rb")
+        import builtins
+        fp = builtins.open(filename, "rb")
 
     # read header fields
     header = fp.read(32+24+32+12)
@@ -121,5 +121,5 @@ quake2palette = (
 
 if __name__ == "__main__":
     im = open("../hacks/sample.wal")
-    print im.info, im.mode, im.size
+    print(im.info, im.mode, im.size)
     im.save("../out.png")

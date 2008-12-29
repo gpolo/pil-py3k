@@ -19,8 +19,6 @@
 
 __version__ = "0.1"
 
-import string
-
 import Image, BmpImagePlugin
 
 
@@ -50,7 +48,7 @@ class IcoImageFile(BmpImagePlugin.BmpImageFile):
         # check magic
         s = self.fp.read(6)
         if not _accept(s):
-            raise SyntaxError, "not an ICO file"
+            raise SyntaxError("not an ICO file")
 
         # pick the largest icon in the file
         m = ""

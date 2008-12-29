@@ -52,14 +52,14 @@ typedef struct {
 #endif
 } ImagingMapperObject;
 
-staticforward PyTypeObject ImagingMapperType;
+static PyTypeObject ImagingMapperType;
 
 ImagingMapperObject*
 PyImaging_MapperNew(const char* filename, int readonly)
 {
     ImagingMapperObject *mapper;
 
-    ImagingMapperType.ob_type = &PyType_Type;
+    Py_TYPE(&ImagingMapperType) = &PyType_Type;
 
     mapper = PyObject_New(ImagingMapperObject, &ImagingMapperType);
     if (mapper == NULL)
@@ -142,12 +142,13 @@ mapping_read(ImagingMapperObject* mapper, PyObject* args)
     if (size < 0)
         size = 0;
 
-    buf = PyString_FromStringAndSize(NULL, size);
+	/* XXX check */
+    buf = PyBytes_FromStringAndSize(NULL, size);
     if (!buf)
 	return NULL;
 
     if (size > 0) {
-        memcpy(PyString_AsString(buf), mapper->base + mapper->offset, size);
+        memcpy(PyBytes_AsString(buf), mapper->base + mapper->offset, size);
         mapper->offset += size;
     }
 
@@ -255,26 +256,36 @@ static struct PyMethodDef methods[] = {
     {NULL, NULL} /* sentinel */
 };
 
-static PyObject*  
-mapping_getattr(ImagingMapperObject* self, char* name)
-{
-    return Py_FindMethod(methods, (PyObject*) self, name);
-}
-
-statichere PyTypeObject ImagingMapperType = {
-	PyObject_HEAD_INIT(NULL)
-	0,				/*ob_size*/
-	"ImagingMapper",		/*tp_name*/
-	sizeof(ImagingMapperObject),	/*tp_size*/
-	0,				/*tp_itemsize*/
-	/* methods */
-	(destructor)mapping_dealloc,	/*tp_dealloc*/
-	0,				/*tp_print*/
-	(getattrfunc)mapping_getattr,	/*tp_getattr*/
-	0,				/*tp_setattr*/
-	0,				/*tp_compare*/
-	0,				/*tp_repr*/
-	0,                              /*tp_hash*/
+static PyTypeObject ImagingMapperType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "ImagingMapper",		/*tp_name*/
+    sizeof(ImagingMapperObject),	/*tp_size*/
+    0,				/*tp_itemsize*/
+    /* methods */
+    (destructor)mapping_dealloc,	/*tp_dealloc*/
+    0,                          /* tp_print */
+    0,							/* tp_getattr */
+    0,                          /* tp_setattr */
+    0,                          /* tp_compare */
+    0,                          /* tp_repr */
+    0,                          /* tp_as_number */
+    0,                          /* tp_as_sequence */
+    0,                          /* tp_as_mapping */
+    0,                          /* tp_hash */
+    0,                          /* tp_call */
+    0,                          /* tp_str */
+    0,                          /* tp_getattro */
+    0,                          /* tp_setattro */
+    0,                          /* tp_as_buffer */
+    0,                          /* tp_flags */
+    0,                          /* tp_doc */
+    0,                          /* tp_traverse */
+    0,                          /* tp_clear */
+    0,                          /* tp_richcompare */
+    0,                          /* tp_weaklistoffset */
+    0,                          /* tp_iter */
+    0,                          /* tp_iternext */
+    methods, 		            /* tp_methods */
 };
 
 PyObject* 
@@ -309,7 +320,8 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     int y, size;
     Imaging im;
     PyBufferProcs *buffer;
-    char* ptr;
+    Py_buffer view;
+    void *ptr;
     int bytes;
 
     PyObject* target;
@@ -326,9 +338,10 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
 	return NULL;
 
     /* check target object */
-    buffer = target->ob_type->tp_as_buffer;
-    if (!buffer || !buffer->bf_getreadbuffer || !buffer->bf_getsegcount ||
-        buffer->bf_getsegcount(target, NULL) != 1) {
+    view.len = -1;
+    buffer = Py_TYPE(target)->tp_as_buffer;
+    if (!buffer || !buffer->bf_getbuffer ||
+			 (*buffer->bf_getbuffer)(target, &view, PyBUF_SIMPLE) < 0) {
         PyErr_SetString(PyExc_TypeError, "expected string or buffer");
         return NULL;
     }
@@ -345,7 +358,11 @@ PyImaging_MapBuffer(PyObject* self, PyObject* args)
     size = ysize * stride;
 
     /* check buffer size */
-    bytes = buffer->bf_getreadbuffer(target, 0, (void**) &ptr);
+    bytes = view.len;
+    ptr = view.buf;
+
+	PyBuffer_Release(&view);
+
     if (bytes < 0) {
         PyErr_SetString(PyExc_ValueError, "buffer has negative size");
         return NULL;

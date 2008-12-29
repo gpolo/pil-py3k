@@ -52,7 +52,7 @@ class PSDraw:
             self.fp.flush()
 
     def setfont(self, font, size):
-        if not self.isofont.has_key(font):
+        if font not in self.isofont:
             # reencode font
             self.fp.write("/PSDraw-%s ISOLatin1Encoding /%s E\n" %\
                           (font, font))
@@ -61,7 +61,7 @@ class PSDraw:
         self.fp.write("/F0 %d /PSDraw-%s F\n" % (size, font))
 
     def setink(self, ink):
-        print "*** NOT YET IMPLEMENTED ***"
+        print("*** NOT YET IMPLEMENTED ***")
 
     def line(self, xy0, xy1):
         xy = xy0 + xy1

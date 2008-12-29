@@ -54,7 +54,7 @@ typedef struct {
     int index; /* temporary use, e.g. in decimate */
 } PyPathObject;
 
-staticforward PyTypeObject PyPathType;
+static PyTypeObject PyPathType;
 
 static double*
 alloc_array(int count)
@@ -105,7 +105,7 @@ path_dealloc(PyPathObject* path)
 /* Helpers								*/
 /* -------------------------------------------------------------------- */
 
-#define PyPath_Check(op) ((op)->ob_type == &PyPathType)
+#define PyPath_Check(op) (Py_TYPE(op) == &PyPathType)
 
 int
 PyPath_Flatten(PyObject* data, double **pxy)
@@ -113,6 +113,7 @@ PyPath_Flatten(PyObject* data, double **pxy)
     int i, j, n;
     double *xy;
     PyBufferProcs *buffer;
+	Py_buffer view;
 
     if (PyPath_Check(data)) {
 	/* This was another path object. */
@@ -125,12 +126,13 @@ PyPath_Flatten(PyObject* data, double **pxy)
 	return path->count;
     }
 	
-    buffer = data->ob_type->tp_as_buffer;
-    if (buffer && buffer->bf_getreadbuffer && buffer->bf_getsegcount &&
-        buffer->bf_getsegcount(data, NULL) == 1) {
+    buffer = Py_TYPE(data)->tp_as_buffer;
+    if (buffer && buffer->bf_getbuffer &&
+			 (*buffer->bf_getbuffer)(data, &view, PyBUF_SIMPLE) == 1) {
         /* Assume the buffer contains floats */
         float* ptr;
-        int n = buffer->bf_getreadbuffer(data, 0, (void**) &ptr);
+        int n = view.len;
+	    PyBuffer_Release(&view);
         n /= 2 * sizeof(float);
         xy = alloc_array(n);
         if (!xy)
@@ -164,8 +166,8 @@ PyPath_Flatten(PyObject* data, double **pxy)
             PyObject *op = PyList_GET_ITEM(data, i);
             if (PyFloat_Check(op))
 		xy[j++] = PyFloat_AS_DOUBLE(op);
-            else if (PyInt_Check(op))
-		xy[j++] = (float) PyInt_AS_LONG(op);
+            else if (PyLong_Check(op))
+		xy[j++] = (float) PyLong_AS_LONG(op);
             else if (PyNumber_Check(op))
                 xy[j++] = PyFloat_AsDouble(op);
             else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
@@ -182,8 +184,8 @@ PyPath_Flatten(PyObject* data, double **pxy)
             PyObject *op = PyTuple_GET_ITEM(data, i);
             if (PyFloat_Check(op))
 		xy[j++] = PyFloat_AS_DOUBLE(op);
-            else if (PyInt_Check(op))
-		xy[j++] = (float) PyInt_AS_LONG(op);
+            else if (PyLong_Check(op))
+		xy[j++] = (float) PyLong_AS_LONG(op);
             else if (PyNumber_Check(op))
                 xy[j++] = PyFloat_AsDouble(op);
             else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
@@ -211,8 +213,8 @@ PyPath_Flatten(PyObject* data, double **pxy)
             }
             if (PyFloat_Check(op))
 		xy[j++] = PyFloat_AS_DOUBLE(op);
-            else if (PyInt_Check(op))
-		xy[j++] = (float) PyInt_AS_LONG(op);
+            else if (PyLong_Check(op))
+		xy[j++] = (float) PyLong_AS_LONG(op);
             else if (PyNumber_Check(op))
                 xy[j++] = PyFloat_AsDouble(op);
             else if (PyArg_ParseTuple(op, "dd", &x, &y)) {
@@ -542,7 +544,8 @@ path_getattr(PyPathObject* self, char* name)
 {
     PyObject* res;
 
-    res = Py_FindMethod(methods, (PyObject*) self, name);
+	res = PyObject_GenericGetAttr((PyObject *)self,
+			PyUnicode_FromString(name));
     if (res)
 	return res;
 
@@ -565,21 +568,34 @@ static PySequenceMethods path_as_sequence = {
 	(ssizessizeobjargproc)0, /*sq_ass_slice*/
 };
 
-statichere PyTypeObject PyPathType = {
-	PyObject_HEAD_INIT(NULL)
-	0,				/*ob_size*/
-	"Path",				/*tp_name*/
-	sizeof(PyPathObject),		/*tp_size*/
-	0,				/*tp_itemsize*/
-	/* methods */
-	(destructor)path_dealloc,	/*tp_dealloc*/
-	0,				/*tp_print*/
-	(getattrfunc)path_getattr,	/*tp_getattr*/
-	0,				/*tp_setattr*/
-	0,				/*tp_compare*/
-	0,				/*tp_repr*/
-	0,                              /*tp_as_number */
-	&path_as_sequence,              /*tp_as_sequence */
-	0,                              /*tp_as_mapping */
-	0,                              /*tp_hash*/
+static PyTypeObject PyPathType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "Path",				/*tp_name*/
+    sizeof(PyPathObject),		/*tp_size*/
+    0,				/*tp_itemsize*/
+    /* methods */
+    (destructor)path_dealloc,	/*tp_dealloc*/
+    0,                          /* tp_print */
+    (getattrfunc)path_getattr,	/* tp_getattr */
+    0,                          /* tp_setattr */
+    0,                          /* tp_compare */
+    0,                          /* tp_repr */
+    0,                          /* tp_as_number */
+    &path_as_sequence,			/* tp_as_sequence */
+    0,                          /* tp_as_mapping */
+    0,                          /* tp_hash */
+    0,                          /* tp_call */
+    0,                          /* tp_str */
+    0,                          /* tp_getattro */
+    0,                          /* tp_setattro */
+    0,                          /* tp_as_buffer */
+    0,                          /* tp_flags */
+    0,                          /* tp_doc */
+    0,                          /* tp_traverse */
+    0,                          /* tp_clear */
+    0,                          /* tp_richcompare */
+    0,                          /* tp_weaklistoffset */
+    0,                          /* tp_iter */
+    0,                          /* tp_iternext */
+    methods,  		            /* tp_methods */
 };

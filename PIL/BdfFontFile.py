@@ -17,8 +17,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
-import FontFile
+from . import Image
+from . import FontFile
 
 import string
 
@@ -70,8 +70,8 @@ def bdf_char(f):
         bitmap.append(s[:-1])
     bitmap = string.join(bitmap, "")
 
-    [x, y, l, d] = map(int, string.split(props["BBX"]))
-    [dx, dy] = map(int, string.split(props["DWIDTH"]))
+    [x, y, l, d] = list(map(int, string.split(props["BBX"])))
+    [dx, dy] = list(map(int, string.split(props["DWIDTH"])))
 
     bbox = (dx, dy), (l, -d-y, x+l, -d), (0, 0, x, y)
 
@@ -94,7 +94,7 @@ class BdfFontFile(FontFile.FontFile):
 
         s = fp.readline()
         if s[:13] != "STARTFONT 2.1":
-            raise SyntaxError, "not a valid BDF file"
+            raise SyntaxError("not a valid BDF file")
 
         props = {}
         comments = []

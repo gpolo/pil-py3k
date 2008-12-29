@@ -18,15 +18,13 @@
 
 __version__ = "0.1"
 
-import string
-
 import Image, ImageFile
 
 def i16(c,i=0):
-    return ord(c[1+i])+(ord(c[i])<<8)
+    return c[1+i] + (c[i] << 8)
 
 def i32(c,i=0):
-    return ord(c[3+i])+(ord(c[2+i])<<8)+(ord(c[1+i])<<16)+(ord(c[i])<<24)
+    return c[3+i] + (c[2+i] << 8) + (c[1+i] << 16) + (c[i] << 24)
 
 def _accept(s):
     return i32(s) == 0 and i32(s, 4) == 4
@@ -44,11 +42,11 @@ class McIdasImageFile(ImageFile.ImageFile):
         # parse area file directory
         s = self.fp.read(256)
         if not _accept(s):
-            raise SyntaxError, "not an McIdas area file"
+            raise SyntaxError("not an McIdas area file")
 
         # get mode
         if i32(s, 40) != 1 or i32(s, 52) != 1:
-            raise SyntaxError, "unsupported McIdas format"
+            raise SyntaxError("unsupported McIdas format")
 
         self.mode = "L"
 

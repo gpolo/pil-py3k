@@ -16,8 +16,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-import Image
-import FontFile
+from . import Image
+from . import FontFile
 
 import string
 
@@ -68,7 +68,7 @@ class PcfFontFile(FontFile.FontFile):
 
         magic = l32(fp.read(4))
         if magic != PCF_MAGIC:
-            raise SyntaxError, "not a PCF file"
+            raise SyntaxError("not a PCF file")
 
         FontFile.FontFile.__init__(self)
 
@@ -198,7 +198,7 @@ class PcfFontFile(FontFile.FontFile):
         nbitmaps = i32(fp.read(4))
 
         if nbitmaps != len(metrics):
-            raise IOError, "Wrong number of bitmaps"
+            raise IOError("Wrong number of bitmaps")
 
         offsets = []
         for i in range(nbitmaps):

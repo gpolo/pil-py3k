@@ -23,8 +23,8 @@ def toImage(arr):
         im = Image.fromstring('L', arr.shape[::-1], arr.tostring())
     return im
 
-print 'SANE version:', sane.init()
-print 'Available devices=', sane.get_devices()
+print('SANE version:', sane.init())
+print('Available devices=', sane.get_devices())
 
 s = sane.open(sane.get_devices()[0][0])
 
@@ -32,7 +32,7 @@ s = sane.open(sane.get_devices()[0][0])
 s.mode = 'gray'
 s.br_x=320. ; s.br_y=240.
 
-print 'Device parameters:', s.get_parameters()
+print('Device parameters:', s.get_parameters())
 
 s.depth=16
 arr16 = s.arr_scan()

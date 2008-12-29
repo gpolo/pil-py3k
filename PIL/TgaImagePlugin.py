@@ -71,7 +71,7 @@ class TgaImageFile(ImageFile.ImageFile):
         if id != 0 or colormaptype not in (0, 1) or\
            self.size[0] <= 0 or self.size[1] <= 0 or\
            depth not in (8, 16, 24, 32):
-            raise SyntaxError, "not a TGA file"
+            raise SyntaxError("not a TGA file")
 
         # image mode
         if imagetype in (3, 11):
@@ -85,7 +85,7 @@ class TgaImageFile(ImageFile.ImageFile):
             if depth == 32:
                 self.mode = "RGBA"
         else:
-            raise SyntaxError, "unknown TGA mode"
+            raise SyntaxError("unknown TGA mode")
 
         # orientation
         orientation = flags & 0x30
@@ -94,7 +94,7 @@ class TgaImageFile(ImageFile.ImageFile):
         elif not orientation:
             orientation = -1
         else:
-            raise SyntaxError, "unknown TGA orientation"
+            raise SyntaxError("unknown TGA orientation")
 
         if imagetype & 8:
             self.info["compression"] = "tga_rle"

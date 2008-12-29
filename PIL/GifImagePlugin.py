@@ -35,7 +35,7 @@ import Image, ImageFile, ImagePalette
 # Helpers
 
 def i16(c):
-    return ord(c[0]) + (ord(c[1])<<8)
+    return c[0] + (c[1] << 8)
 
 def o16(i):
     return chr(i&255) + chr(i>>8&255)
@@ -45,7 +45,7 @@ def o16(i):
 # Identify/read GIF files
 
 def _accept(prefix):
-    return prefix[:6] in ["GIF87a", "GIF89a"]
+    return prefix[:6] in [b"GIF87a", b"GIF89a"]
 
 ##
 # Image plugin for GIF images.  This plugin supports both GIF87 and
@@ -60,16 +60,16 @@ class GifImageFile(ImageFile.ImageFile):
 
     def data(self):
         s = self.fp.read(1)
-        if s and ord(s):
-            return self.fp.read(ord(s))
+        if s:
+            return self.fp.read(s)
         return None
 
     def _open(self):
 
         # Screen
         s = self.fp.read(13)
-        if s[:6] not in ["GIF87a", "GIF89a"]:
-            raise SyntaxError, "not a GIF file"
+        if s[:6] not in [b"GIF87a", b"GIF89a"]:
+            raise SyntaxError("not a GIF file")
 
         self.info["version"] = s[:6]
 
@@ -77,17 +77,17 @@ class GifImageFile(ImageFile.ImageFile):
 
         self.tile = []
 
-        flags = ord(s[10])
+        flags = s[10]
 
         bits = (flags & 7) + 1
 
         if flags & 128:
             # get global palette
-            self.info["background"] = ord(s[11])
+            self.info["background"] = s[11]
             # check if palette contains colour indices
             p = self.fp.read(3<<bits)
             for i in range(0, len(p), 3):
-                if not (chr(i/3) == p[i] == p[i+1] == p[i+2]):
+                if not (chr(i//3) == p[i] == p[i+1] == p[i+2]):
                     p = ImagePalette.raw("RGB", p)
                     self.global_palette = self.palette = p
                     break
@@ -106,7 +106,7 @@ class GifImageFile(ImageFile.ImageFile):
             self.__fp.seek(self.__rewind)
 
         if frame != self.__frame + 1:
-            raise ValueError, "cannot seek to frame %d" % frame
+            raise ValueError("cannot seek to frame %d" % frame)
         self.__frame = frame
 
         self.tile = []
@@ -128,22 +128,22 @@ class GifImageFile(ImageFile.ImageFile):
         while 1:
 
             s = self.fp.read(1)
-            if not s or s == ";":
+            if not s or s == b";":
                 break
 
-            elif s == "!":
+            elif s == b"!":
                 #
                 # extensions
                 #
                 s = self.fp.read(1)
                 block = self.data()
-                if ord(s) == 249:
+                if s == 249:
                     #
                     # graphic control extension
                     #
-                    flags = ord(block[0])
+                    flags = block[0]
                     if flags & 1:
-                        self.info["transparency"] = ord(block[3])
+                        self.info["transparency"] = block[3]
                     self.info["duration"] = i16(block[1:3]) * 10
                     try:
                         # disposal methods
@@ -156,7 +156,7 @@ class GifImageFile(ImageFile.ImageFile):
                             self.dispose = self.im.copy()
                     except (AttributeError, KeyError):
                         pass
-                elif ord(s) == 255:
+                elif s == 255:
                     #
                     # application extension
                     #
@@ -166,7 +166,7 @@ class GifImageFile(ImageFile.ImageFile):
                 while self.data():
                     pass
 
-            elif s == ",":
+            elif s == b",":
                 #
                 # local image
                 #
@@ -175,7 +175,7 @@ class GifImageFile(ImageFile.ImageFile):
                 # extent
                 x0, y0 = i16(s[0:]), i16(s[2:])
                 x1, y1 = x0 + i16(s[4:]), y0 + i16(s[6:])
-                flags = ord(s[8])
+                flags = s[8]
 
                 interlace = (flags & 64) != 0
 
@@ -185,21 +185,21 @@ class GifImageFile(ImageFile.ImageFile):
                         ImagePalette.raw("RGB", self.fp.read(3<<bits))
 
                 # image data
-                bits = ord(self.fp.read(1))
+                bits = self.fp.read(1)
                 self.__offset = self.fp.tell()
                 self.tile = [("gif",
                              (x0, y0, x1, y1),
                              self.__offset,
-                             (bits, interlace))]
+                             (bits[0], interlace))]
                 break
 
             else:
                 pass
-                # raise IOError, "illegal GIF tag `%x`" % ord(s)
+                # raise IOError, "illegal GIF tag `%x`" % s
 
         if not self.tile:
             # self.__fp = None
-            raise EOFError, "no more images in GIF file"
+            raise EOFError("no more images in GIF file")
 
         self.mode = "L"
         if self.palette:

@@ -17,15 +17,9 @@
 #
 
 import Image
-import re, string
+import re
 
-try:
-    x = int("a", 16)
-except TypeError:
-    # python 1.5.2 doesn't support int(x,b)
-    str2int = string.atoi
-else:
-    str2int = int
+str2int = int
 
 ##
 # Convert color string to RGB tuple.
@@ -42,7 +36,7 @@ def getrgb(color):
     except KeyError:
         try:
             # fall back on case-insensitive lookup
-            rgb = colormap[string.lower(color)]
+            rgb = colormap[color.lower()]
         except KeyError:
             rgb = None
     # found color in cache

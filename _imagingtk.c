@@ -64,8 +64,16 @@ static PyMethodDef functions[] = {
     {NULL, NULL} /* sentinel */
 };
 
-DL_EXPORT(void)
-init_imagingtk(void)
+static struct PyModuleDef _imagingtk_module = {
+	PyModuleDef_HEAD_INIT,	/* m_base */
+	"_imagingtk",			/* m_name */
+	NULL,					/* m_doc */
+	-1,						/* m_size */
+	functions,				/* m_methods */
+};
+
+PyMODINIT_FUNC
+PyInit__imagingtk(void)
 {
-    Py_InitModule("_imagingtk", functions);
+	return PyModule_Create(&_imagingtk_module);
 }
