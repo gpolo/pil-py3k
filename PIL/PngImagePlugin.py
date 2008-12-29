@@ -35,11 +35,11 @@ import Image, ImageFile, ImagePalette
 
 
 def i16(c):
-    return ord(c[1]) + (ord(c[0])<<8)
+    return c[1] + (c[0] << 8)
 def i32(c):
-    return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24)
+    return c[3] + (c[2] << 8) + (c[1] << 16) + (c[0] << 24)
 
-is_cid = re.compile("\w\w\w\w").match
+is_cid = re.compile(b"\w\w\w\w").match
 
 
 _MAGIC = b"\211PNG\r\n\032\n"
@@ -181,12 +181,12 @@ class PngStream(ChunkStream):
         s = ImageFile._safe_read(self.fp, len)
         self.im_size = i32(s), i32(s[4:])
         try:
-            self.im_mode, self.im_rawmode = _MODES[(ord(s[8]), ord(s[9]))]
+            self.im_mode, self.im_rawmode = _MODES[(s[8], s[9])]
         except:
             pass
-        if ord(s[12]):
+        if s[12]:
             self.im_info["interlace"] = 1
-        if ord(s[11]):
+        if s[11]:
             raise SyntaxError("unknown filter category")
         return s
 
@@ -234,7 +234,7 @@ class PngStream(ChunkStream):
         # pixels per unit
         s = ImageFile._safe_read(self.fp, len)
         px, py = i32(s), i32(s[4:])
-        unit = ord(s[8])
+        unit = s[8]
         if unit == 1: # meter
             dpi = int(px * 0.0254 + 0.5), int(py * 0.0254 + 0.5)
             self.im_info["dpi"] = dpi
@@ -247,9 +247,9 @@ class PngStream(ChunkStream):
         # text
         s = ImageFile._safe_read(self.fp, len)
         try:
-            k, v = s.split("\0", 1)
+            k, v = s.split(b"\0", 1)
         except ValueError:
-            k = s; v = "" # fallback for broken tEXt tags
+            k = s; v = b"" # fallback for broken tEXt tags
         if k:
             self.im_info[k] = v
         return s
@@ -287,7 +287,7 @@ class PngImageFile(ImageFile.ImageFile):
             cid, pos, len = self.png.read()
 
             try:
-                s = self.png.call(cid, pos, len)
+                s = self.png.call(cid.decode('ascii'), pos, len)
             except EOFError:
                 break
             except AttributeError:

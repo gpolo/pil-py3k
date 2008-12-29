@@ -2682,7 +2682,7 @@ _crc32(PyObject* self, PyObject* args)
 
     hi = lo = 0;
 
-    if (!PyArg_ParseTuple(args, "s#|(ii)", &buffer, &bytes, &hi, &lo))
+    if (!PyArg_ParseTuple(args, "y#|(ii)", &buffer, &bytes, &hi, &lo))
 	return NULL;
 
     crc = ((UINT32) (hi & 0xFFFF) << 16) + (lo & 0xFFFF);

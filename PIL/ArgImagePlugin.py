@@ -26,7 +26,7 @@ import Image, ImageFile, ImagePalette
 
 from PngImagePlugin import i16, i32, ChunkStream, _MODES
 
-MAGIC = "\212ARG\r\n\032\n"
+MAGIC = b"\212ARG\r\n\032\n"
 
 # --------------------------------------------------------------------
 # ARG parser
@@ -420,7 +420,7 @@ class ArgImageFile(ImageFile.ImageFile):
 
         cid, offset, bytes = self.arg.read()
 
-        if cid != "AHDR":
+        if cid != b"AHDR":
             raise SyntaxError("expected an AHDR chunk")
 
         s = self.arg.call(cid, offset, bytes)
