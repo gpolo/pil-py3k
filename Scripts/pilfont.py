@@ -48,8 +48,6 @@ for f in files:
         p.save(f)
 
     except (SyntaxError, IOError):
-        import traceback
-        traceback.print_exc()
         print("failed")
 
     else:
