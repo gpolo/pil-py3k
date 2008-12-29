@@ -1925,8 +1925,8 @@ def open(fp, mode="r"):
                 fp.seek(0)
                 return factory(fp, filename)
         except (SyntaxError, IndexError, TypeError) as err:
-            import traceback
-            traceback.print_exc()
+            #import traceback
+            #traceback.print_exc()
             #print(err, "<<<<<")
             pass
 

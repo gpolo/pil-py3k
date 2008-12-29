@@ -42,7 +42,7 @@ def i32(c):
 is_cid = re.compile("\w\w\w\w").match
 
 
-_MAGIC = "\211PNG\r\n\032\n"
+_MAGIC = b"\211PNG\r\n\032\n"
 
 
 _MODES = {
@@ -376,10 +376,10 @@ class PngImageFile(ImageFile.ImageFile):
 # PNG writer
 
 def o16(i):
-    return chr(i>>8&255) + chr(i&255)
+    return bytes((i>>8&255, i&255))
 
 def o32(i):
-    return chr(i>>24&255) + chr(i>>16&255) + chr(i>>8&255) + chr(i&255)
+    return bytes((i>>24&255, i>>16&255, i>>8&255 , i&255))
 
 _OUTMODES = {
     # supported PIL modes, and corresponding rawmodes/bits/color combinations
@@ -401,10 +401,7 @@ _OUTMODES = {
 def putchunk(fp, cid, *data):
     "Write a PNG chunk (including CRC field)"
 
-    for item in data:
-        print(type(item))
     data = b''.join(data)#array.array("B", data).tostring()
-    print(data)
 
     fp.write(o32(len(data)) + cid)
     fp.write(data)
@@ -418,7 +415,7 @@ class _idat:
         self.fp = fp
         self.chunk = chunk
     def write(self, data):
-        self.chunk(self.fp, "IDAT", data)
+        self.chunk(self.fp, b"IDAT", data)
 
 def _save(im, fp, filename, chunk=putchunk, check=0):
     # save an image to disk (called by the save method)
@@ -474,13 +471,12 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 
     fp.write(_MAGIC)
 
-    chunk(fp, "IHDR",
-            bytes((
-                o32(im.size[0]), o32(im.size[1]),  #  0: size
-                mode,                              #  8: depth/type
-                0,                                 # 10: compression
-                0,                                 # 11: filter category
-                0)))                               # 12: interlace flag
+    chunk(fp, b"IHDR",
+            o32(im.size[0]), o32(im.size[1]),     #  0: size
+            bytes((ord(mode[0]), ord(mode[1]))),  #  8: depth/type
+            bytes((0,                             # 10: compression
+                0,                                # 11: filter category
+                0)))                              # 12: interlace flag
 
     if im.mode == "P":
         chunk(fp, "PLTE", im.im.getpalette("RGB"))
@@ -513,7 +509,7 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
 
     ImageFile._save(im, _idat(fp, chunk), [("zip", (0,0)+im.size, 0, rawmode)])
 
-    chunk(fp, "IEND", "")
+    chunk(fp, b"IEND", b"")
 
     try:
         fp.flush()

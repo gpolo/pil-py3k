@@ -24,7 +24,7 @@ import Image, ImageFile
 #
 # --------------------------------------------------------------------
 
-field = re.compile(r"([a-z]*) ([^ \r\n]*)")
+field = re.compile(br"([a-z]*) ([^ \r\n]*)")
 
 ##
 # Image plugin for IM Tools images.

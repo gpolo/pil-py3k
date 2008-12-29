@@ -91,7 +91,7 @@ for i in range(2, 33):
 # --------------------------------------------------------------------
 # Read IM directory
 
-split = re.compile(r"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
+split = re.compile(br"^([A-Za-z][^:]*):[ \t]*(.*)[ \t]*$")
 
 def number(s):
     try:
@@ -180,7 +180,7 @@ class ImImageFile(ImageFile.ImageFile):
 
             else:
 
-                raise SyntaxError("Syntax error in IM header: " + s)
+                raise SyntaxError("Syntax error in IM header: " + str(s))
 
         if not n:
             raise SyntaxError("Not an IM file")
