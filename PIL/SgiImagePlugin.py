@@ -49,10 +49,10 @@ class SgiImageFile(ImageFile.ImageFile):
             raise SyntaxError("not an SGI image file")
 
         # relevant header entries
-        compression = ord(s[2])
+        compression = s[2]
 
         # bytes, dimension, zsize
-        layout = ord(s[3]), i16(s[4:]), i16(s[10:])
+        layout = s[3], i16(s[4:]), i16(s[10:])
 
         # determine mode from bytes/zsize
         if layout == (1, 2, 1):

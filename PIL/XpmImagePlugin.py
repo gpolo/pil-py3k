@@ -22,11 +22,11 @@ import re
 import Image, ImageFile, ImagePalette
 
 # XPM header
-xpm_head = re.compile("\"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)")
+xpm_head = re.compile(b"\"([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*)")
 
 
 def _accept(prefix):
-    return prefix[:9] == "/* XPM */"
+    return prefix[:9] == b"/* XPM */"
 
 ##
 # Image plugin for X11 pixel maps.
@@ -61,28 +61,28 @@ class XpmImageFile(ImageFile.ImageFile):
         #
         # load palette description
 
-        palette = ["\0\0\0"] * 256
+        palette = [b"\0\0\0"] * 256
 
         for i in range(pal):
 
             s = self.fp.readline()
-            if s[-2:] == '\r\n':
+            if s[-2:] == b'\r\n':
                 s = s[:-2]
-            elif s[-1:] in '\r\n':
+            elif s[-1:] in b'\r\n':
                 s = s[:-1]
 
-            c = ord(s[1])
+            c = s[1]
             s = s[2:-2].split()
 
             for i in range(0, len(s), 2):
 
-                if s[i] == "c":
+                if s[i] == b"c":
 
                     # process colour key
                     rgb = s[i+1]
-                    if rgb == "None":
+                    if rgb == b"None":
                         self.info["transparency"] = c
-                    elif rgb[0] == "#":
+                    elif rgb[0] == b"#":
                         # FIXME: handle colour names (see ImagePalette.py)
                         rgb = int(rgb[1:], 16)
                         palette[c] = chr((rgb >> 16) & 255) +\
@@ -99,7 +99,7 @@ class XpmImageFile(ImageFile.ImageFile):
                 raise ValueError("cannot read this XPM file")
 
         self.mode = "P"
-        self.palette = ImagePalette.raw("RGB", "".join(palette))
+        self.palette = ImagePalette.raw("RGB", b"".join(palette))
 
         self.tile = [("raw", (0, 0)+self.size, self.fp.tell(), ("P", 0, 1))]
 

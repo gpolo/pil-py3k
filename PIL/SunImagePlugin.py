@@ -71,7 +71,7 @@ class SunImageFile(ImageFile.ImageFile):
             if self.mode == "L":
                 self.mode = rawmode = "P"
 
-        stride = (((self.size[0] * depth + 7) / 8) + 3) & (~3)
+        stride = (((self.size[0] * depth + 7) // 8) + 3) & (~3)
 
         if compression == 1:
             self.tile = [("raw", (0,0)+self.size, offset, (rawmode, stride))]

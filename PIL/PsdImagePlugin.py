@@ -37,16 +37,16 @@ MODES = {
 # helpers
 
 def i16(c):
-    return ord(c[1]) + (ord(c[0])<<8)
+    return c[1] + (c[0] << 8)
 
 def i32(c):
-    return ord(c[3]) + (ord(c[2])<<8) + (ord(c[1])<<16) + (ord(c[0])<<24)
+    return c[3] + (c[2] << 8) + (c[1] << 16) + (c[0] << 24)
 
 # --------------------------------------------------------------------.
 # read PSD images
 
 def _accept(prefix):
-    return prefix[:4] == "8BPS"
+    return prefix[:4] == b"8BPS"
 
 ##
 # Image plugin for Photoshop images.
@@ -64,7 +64,7 @@ class PsdImageFile(ImageFile.ImageFile):
         # header
 
         s = read(26)
-        if s[:4] != "8BPS" or i16(s[4:]) != 1:
+        if s[:4] != b"8BPS" or i16(s[4:]) != 1:
             raise SyntaxError("not a PSD file")
 
         psd_bits = i16(s[22:])
