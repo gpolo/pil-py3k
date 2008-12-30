@@ -48,32 +48,32 @@ import array, sys
 
 try:
     if sys.byteorder == "little":
-        byteorder = "II"
+        byteorder = b"II"
     else:
-        byteorder = "MM"
+        byteorder = b"MM"
 except AttributeError:
     if ord(array.array("i",[1]).tostring()[0]):
-        byteorder = "II"
+        byteorder = b"II"
     else:
-        byteorder = "MM"
+        byteorder = b"MM"
 
 #
 # --------------------------------------------------------------------
 # Read TIFF files
 
 def il16(c,o=0):
-    return ord(c[o]) + (ord(c[o+1])<<8)
+    return c[o] + (c[o+1] << 8)
 def il32(c,o=0):
-    return ord(c[o]) + (ord(c[o+1])<<8) + (ord(c[o+2])<<16) + (ord(c[o+3])<<24)
+    return c[o] + (c[o+1] << 8) + (c[o+2] << 16) + (c[o+3] << 24)
 def ol16(i):
-    return chr(i&255) + chr(i>>8&255)
+    return bytes((i&255, i>>8&255))
 def ol32(i):
-    return chr(i&255) + chr(i>>8&255) + chr(i>>16&255) + chr(i>>24&255)
+    return bytes((i&255, i>>8&255, i>>16&255, i>>24&255))
 
 def ib16(c,o=0):
-    return ord(c[o+1]) + (ord(c[o])<<8)
+    return c[o+1] + (c[o] << 8)
 def ib32(c,o=0):
-    return ord(c[o+3]) + (ord(c[o+2])<<8) + (ord(c[o+1])<<16) + (ord(c[o])<<24)
+    return c[o+3] + (c[o+2] << 8) + (c[o+1] << 16) + (c[o] << 24)
 
 # a few tag names, just to make the code below a bit more readable
 IMAGEWIDTH = 256
@@ -152,7 +152,7 @@ OPEN_INFO = {
     (8, 1, 1, (8,8,8), ()): ("LAB", "LAB"),
 }
 
-PREFIXES = ["MM\000\052", "II\052\000", "II\xBC\000"]
+PREFIXES = [b"MM\000\052", b"II\052\000", b"II\xBC\000"]
 
 def _accept(prefix):
     return prefix[:4] in PREFIXES
@@ -165,12 +165,12 @@ class ImageFileDirectory:
     # represents a TIFF tag directory.  to speed things up,
     # we don't decode tags unless they're asked for.
 
-    def __init__(self, prefix="II"):
+    def __init__(self, prefix=b"II"):
         self.prefix = prefix[:2]
-        if self.prefix == "MM":
+        if self.prefix == b"MM":
             self.i16, self.i32 = ib16, ib32
             # FIXME: save doesn't yet support big-endian mode...
-        elif self.prefix == "II":
+        elif self.prefix == b"II":
             self.i16, self.i32 = il16, il32
             self.o16, self.o32 = ol16, ol32
         else:
@@ -486,7 +486,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 raise EOFError("no more images in TIFF file")
             self.fp.seek(self.__next)
             self.tag.load(self.fp)
-            self.__next = self.tag.__next__
+            self.__next = self.tag.next
             self.__frame = self.__frame + 1
         self._setup()
 
@@ -521,7 +521,7 @@ class TiffImageFile(ImageFile.ImageFile):
     def _setup(self):
         "Setup this image object based on current tags"
 
-        if 0xBC01 in self.tag:
+        if self.tag.has_key(0xBC01):
             raise IOError("Windows Media Photo files not yet supported")
 
         getscalar = self.tag.getscalar
@@ -585,7 +585,7 @@ class TiffImageFile(ImageFile.ImageFile):
         # build tile descriptors
         x = y = l = 0
         self.tile = []
-        if STRIPOFFSETS in self.tag:
+        if self.tag.has_key(STRIPOFFSETS):
             # striped image
             h = getscalar(ROWSPERSTRIP, ysize)
             w = self.size[0]
