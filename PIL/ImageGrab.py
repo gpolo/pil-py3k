@@ -15,7 +15,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
+import Image
 
 ##
 # (New in 1.1.3)  The <b>ImageGrab</b> module can be used to copy

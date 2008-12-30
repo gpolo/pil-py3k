@@ -25,11 +25,10 @@
 
 __version__ = "0.1"
 
-import string
-from . import Image, ImageFile, ImagePalette
+import Image, ImageFile, ImagePalette
 
 def i16(c):
-    return ord(c[1]) + (ord(c[0])<<8)
+    return c[1] + (c[0] << 8)
 
 ##
 # Image plugin for the GD uncompressed format.  Note that this format

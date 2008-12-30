@@ -40,7 +40,7 @@ class ImageFileIO(StringIO):
 
 if __name__ == "__main__":
 
-    from . import Image
+    import Image
     fp = open("/images/clenna.im", "rb")
     im = Image.open(ImageFileIO(fp))
     im.load() # make sure we can read the raster data

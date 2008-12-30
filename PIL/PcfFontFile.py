@@ -16,10 +16,8 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
+import Image
 from . import FontFile
-
-import string
 
 # --------------------------------------------------------------------
 # declarations
@@ -55,7 +53,7 @@ def b32(c):
     return c[3] + (c[2] << 8) + (c[1] << 16) + (c[0] << 24)
 
 def sz(s, o):
-    return s[o:string.index(s, "\0", o)]
+    return s[o:s.index(b"\0", o)]
 
 ##
 # Font file plugin for the X11 PCF format.

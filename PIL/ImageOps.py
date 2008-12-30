@@ -17,7 +17,7 @@
 # See the README file for information on usage and redistribution.
 #
 
-from . import Image
+import Image
 import operator
 from functools import reduce
 
@@ -95,7 +95,7 @@ def autocontrast(image, cutoff=0, ignore=None):
             for ix in range(256):
                 n = n + h[ix]
             # remove cutoff% pixels from the low end
-            cut = n * cutoff / 100
+            cut = n * cutoff // 100
             for lo in range(256):
                 if cut > h[lo]:
                     cut = cut - h[lo]
@@ -106,7 +106,7 @@ def autocontrast(image, cutoff=0, ignore=None):
                 if cut <= 0:
                     break
             # remove cutoff% samples from the hi end
-            cut = n * cutoff / 100
+            cut = n * cutoff // 100
             for hi in range(255, -1, -1):
                 if cut > h[hi]:
                     cut = cut - h[hi]
@@ -127,7 +127,7 @@ def autocontrast(image, cutoff=0, ignore=None):
             # don't bother
             lut.extend(list(range(256)))
         else:
-            scale = 255.0 / (hi - lo)
+            scale = 255 / (hi - lo)
             offset = -lo * scale
             for ix in range(256):
                 ix = int(ix * scale + offset)

@@ -81,30 +81,30 @@ class ContainerIO:
         else:
             n = self.length - self.pos
         if not n: # EOF
-            return ""
+            return b""
         self.pos = self.pos + n
         return self.fh.read(n)
 
     ##
     # Read a line of text.
     #
-    # @return An 8-bit string.
+    # @return A byte string.
 
     def readline(self):
-        s = ""
+        s = b""
         while 1:
             c = self.read(1)
             if not c:
                 break
             s = s + c
-            if c == "\n":
+            if c == b"\n":
                 break
         return s
 
     ##
     # Read multiple lines of text.
     #
-    # @return A list of 8-bit strings.
+    # @return A list of byte strings.
 
     def readlines(self):
         l = []

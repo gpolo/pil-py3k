@@ -28,12 +28,12 @@ class BitStream:
         self.bits = 0
         self.bitbuffer = 0
 
-    def __next__(self):
-        return ord(self.fp.read(1))
+    def next(self):
+        return self.fp.read(1)
 
     def peek(self, bits):
         while self.bits < bits:
-            c = next(self)
+            c = self.next()
             if c < 0:
                 self.bits = 0
                 continue
@@ -43,7 +43,7 @@ class BitStream:
 
     def skip(self, bits):
         while self.bits < bits:
-            self.bitbuffer = (self.bitbuffer << 8) + ord(self.fp.read(1))
+            self.bitbuffer = (self.bitbuffer << 8) + self.fp.read(1)
             self.bits = self.bits + 8
         self.bits = self.bits - bits
 

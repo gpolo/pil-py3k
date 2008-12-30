@@ -36,17 +36,17 @@
 # See the README file for information on usage and redistribution.
 #
 
-import string, io
+import io
 
 
 def i16(c, o = 0):
-    return ord(c[o])+(ord(c[o+1])<<8)
+    return c[o] + (c[o+1] << 8)
 
 def i32(c, o = 0):
-    return ord(c[o])+(ord(c[o+1])<<8)+(ord(c[o+2])<<16)+(ord(c[o+3])<<24)
+    return c[o] + (c[o+1] << 8) + (c[o+2] << 16) + (c[o+3] << 24)
 
 
-MAGIC = '\320\317\021\340\241\261\032\341'
+MAGIC = b'\320\317\021\340\241\261\032\341'
 
 #
 # --------------------------------------------------------------------
@@ -105,7 +105,7 @@ class _OleStream(io.StringIO):
             data.append(fp.read(sectorsize))
             sect = fat[sect]
 
-        data = string.join(data, "")
+        data = b"".join(data)
 
         # print len(data), size
 
@@ -344,7 +344,7 @@ class OleFileIO:
             entry = fp.read(128)
             if not entry:
                 break
-            type = ord(entry[66])
+            type = entry[66]
             name = self._unicode(entry[0:0+i16(entry, 64)])
             ptrs = i32(entry, 68), i32(entry, 72), i32(entry, 76)
             sect, size = i32(entry, 116), i32(entry, 120)
@@ -446,7 +446,7 @@ class OleFileIO:
         fp.seek(i32(s, 16))
 
         # get section
-        s = "****" + fp.read(i32(fp.read(4))-4)
+        s = b"****" + fp.read(i32(fp.read(4))-4)
 
         for i in range(i32(s, 4)):
 
@@ -480,9 +480,9 @@ class OleFileIO:
                 value = int(i32(s, offset+4)) + (int(i32(s, offset+8))<<32)
                 # FIXME: this is a 64-bit int: "number of 100ns periods
                 # since Jan 1,1601".  Should map this to Python time
-                value = value / 10000000 # seconds
+                value = value // 10000000 # seconds
             elif type == VT_UI1:
-                value = ord(s[offset+4])
+                value = s[offset+4]
             elif type == VT_CLSID:
                 value = self._clsid(s[offset+4:offset+20])
             elif type == VT_CF:

@@ -165,7 +165,7 @@ class SpiderImageFile(ImageFile.ImageFile):
         (min, max) = self.getextrema()
         m = 1
         if max != min:
-            m = depth / (max-min)
+            m = depth // (max-min)
         b = -m * min
         return self.point(lambda i, m=m, b=b: i * m + b).convert("L")
 
@@ -204,11 +204,11 @@ def loadImageSeries(filelist=None):
 def makeSpiderHeader(im):
     nsam,nrow = im.size
     lenbyt = nsam * 4  # There are labrec records in the header
-    labrec = 1024 / lenbyt
+    labrec = 1024 // lenbyt
     if 1024%lenbyt != 0: labrec += 1
     labbyt = labrec * lenbyt
     hdr = []
-    nvalues = labbyt / 4
+    nvalues = labbyt // 4
     for i in range(nvalues):
         hdr.append(0.0)
 
