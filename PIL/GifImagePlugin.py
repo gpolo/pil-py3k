@@ -61,7 +61,7 @@ class GifImageFile(ImageFile.ImageFile):
     def data(self):
         s = self.fp.read(1)
         if s:
-            return self.fp.read(s)
+            return self.fp.read(s[0])
         return None
 
     def _open(self):
