@@ -23,10 +23,10 @@ import Image, ImageFile, ImagePalette
 
 
 def i16(c):
-    return ord(c[0]) + (ord(c[1])<<8)
+    return c[0] + (c[1] << 8)
 
 def i32(c):
-    return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
+    return c[0] + (c[1] << 8) + (c[2] << 16) + (c[3] << 24)
 
 
 MODES = {
@@ -41,7 +41,7 @@ MODES = {
 
 
 def _accept(prefix):
-    return prefix[0] == "\0"
+    return prefix[0] == 0
 
 ##
 # Image plugin for Targa files.
@@ -56,14 +56,14 @@ class TgaImageFile(ImageFile.ImageFile):
         # process header
         s = self.fp.read(18)
 
-        id = ord(s[0])
+        id = s[0]
 
-        colormaptype = ord(s[1])
-        imagetype = ord(s[2])
+        colormaptype = s[1]
+        imagetype = s[2]
 
-        depth = ord(s[16])
+        depth = s[16]
 
-        flags = ord(s[17])
+        flags = s[17]
 
         self.size = i16(s[12:]), i16(s[14:])
 
@@ -104,13 +104,13 @@ class TgaImageFile(ImageFile.ImageFile):
             start, size, mapdepth = i16(s[3:]), i16(s[5:]), i16(s[7:])
             if mapdepth == 16:
                 self.palette = ImagePalette.raw("BGR;16",
-                    "\0"*2*start + self.fp.read(2*size))
+                    b"\0"*2*start + self.fp.read(2*size))
             elif mapdepth == 24:
                 self.palette = ImagePalette.raw("BGR",
-                    "\0"*3*start + self.fp.read(3*size))
+                    b"\0"*3*start + self.fp.read(3*size))
             elif mapdepth == 32:
                 self.palette = ImagePalette.raw("BGRA",
-                    "\0"*4*start + self.fp.read(4*size))
+                    b"\0"*4*start + self.fp.read(4*size))
 
         # setup tile descriptor
         try:

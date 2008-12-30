@@ -35,10 +35,10 @@ import Image, ImageFile, ImagePalette
 # Read BMP file
 
 def i16(c):
-    return ord(c[0]) + (ord(c[1])<<8)
+    return c[0] + (c[1] << 8)
 
 def i32(c):
-    return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
+    return c[0] + (c[1] << 8) + (c[2] << 16) + (c[3] << 24)
 
 
 BIT2MODE = {
@@ -52,7 +52,7 @@ BIT2MODE = {
 }
 
 def _accept(prefix):
-    return prefix[:2] == "BM"
+    return prefix[:2] == b"BM"
 
 ##
 # Image plugin for the Windows BMP format.
@@ -139,7 +139,7 @@ class BmpImageFile(ImageFile.ImageFile):
             else:
                 self.mode = "P"
                 self.palette = ImagePalette.raw(
-                    "BGR", "".join(palette)
+                    "BGR", b"".join(palette)
                     )
 
         if not offset:
@@ -156,7 +156,7 @@ class BmpImageFile(ImageFile.ImageFile):
 
         # HEAD
         s = self.fp.read(14)
-        if s[:2] != "BM":
+        if s[:2] != b"BM":
             raise SyntaxError("Not a BMP file")
         offset = i32(s[10:])
 

@@ -56,9 +56,9 @@ class PcxImageFile(ImageFile.ImageFile):
             raise SyntaxError("bad PCX image size")
 
         # format
-        version = ord(s[1])
-        bits = ord(s[3])
-        planes = ord(s[65])
+        version = s[1]
+        bits = s[3]
+        planes = s[65]
         stride = i16(s,66)
 
         self.info["dpi"] = i16(s,12), i16(s,14)
