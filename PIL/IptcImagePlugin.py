@@ -210,7 +210,7 @@ Image.register_extension("IPTC", ".iim")
 
 def getiptcinfo(im):
 
-    from . import TiffImagePlugin, JpegImagePlugin
+    import TiffImagePlugin, JpegImagePlugin
     import io
 
     data = None

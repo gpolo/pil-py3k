@@ -15,8 +15,8 @@ import site
 import glob, os, sys
 
 # drivers
-from PIL import BdfFontFile
-from PIL import PcfFontFile
+import BdfFontFile
+import PcfFontFile
 
 if len(sys.argv) <= 1:
     print("PILFONT", VERSION, "-- PIL font compiler.")

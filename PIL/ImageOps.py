@@ -44,7 +44,7 @@ def _border(border):
 
 def _color(color, mode):
     if Image.isStringType(color):
-        from . import ImageColor
+        import ImageColor
         color = ImageColor.getcolor(color, mode)
     return color
 

@@ -307,7 +307,7 @@ class ImageFileDirectory:
             tag, typ = i16(ifd), i16(ifd, 2)
 
             if Image.DEBUG:
-                from . import TiffTags
+                import TiffTags
                 tagname = TiffTags.TAGS.get(tag, "unknown")
                 typname = TiffTags.TYPES.get(typ, "unknown")
                 print("tag: %s (%d)" % (tagname, tag), end=' ')
@@ -370,7 +370,7 @@ class ImageFileDirectory:
         for tag, value in tags:
 
             if Image.DEBUG:
-                from . import TiffTags
+                import TiffTags
                 tagname = TiffTags.TAGS.get(tag, "unknown")
                 print("save: %s (%d)" % (tagname, tag), end=' ')
                 print("- value:", value)

@@ -16,7 +16,7 @@
 import site
 import getopt, string, sys
 
-from PIL import Image
+import Image
 
 def usage():
     print("PIL Convert 0.5/1998-12-30 -- convert image files")

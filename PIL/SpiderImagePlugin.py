@@ -171,7 +171,7 @@ class SpiderImageFile(ImageFile.ImageFile):
 
     # returns a ImageTk.PhotoImage object, after rescaling to 0..255
     def tkPhotoImage(self):
-        from . import ImageTk
+        import ImageTk
         return ImageTk.PhotoImage(self.convert2byte(), palette=256)
 
 # --------------------------------------------------------------------

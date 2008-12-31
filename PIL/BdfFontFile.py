@@ -18,7 +18,7 @@
 #
 
 import Image
-from . import FontFile
+import FontFile
 
 import string
 
