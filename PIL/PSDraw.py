@@ -25,55 +25,58 @@ class PSDraw:
     def __init__(self, fp=None):
         if not fp:
             import sys
-            fp = sys.stdout
+            fp = sys.stdout.buffer
         self.fp = fp
 
     def begin_document(self, id = None):
         "Write Postscript DSC header"
         # FIXME: incomplete
-        self.fp.write("%!PS-Adobe-3.0\n"
-                      "save\n"
-                      "/showpage { } def\n"
-                      "%%EndComments\n"
-                      "%%BeginDocument\n")
+        self.fp.write(b"%!PS-Adobe-3.0\n"
+                      b"save\n"
+                      b"/showpage { } def\n"
+                      b"%%EndComments\n"
+                      b"%%BeginDocument\n")
         #self.fp.write(ERROR_PS) # debugging!
         self.fp.write(EDROFF_PS)
         self.fp.write(VDI_PS)
-        self.fp.write("%%EndProlog\n")
+        self.fp.write(b"%%EndProlog\n")
         self.isofont = {}
 
     def end_document(self):
         "Write Postscript DSC footer"
-        self.fp.write("%%EndDocument\n"
-                      "restore showpage\n"
-                      "%%End\n")
+        self.fp.write(b"%%EndDocument\n"
+                      b"restore showpage\n"
+                      b"%%End\n")
         if hasattr(self.fp, "flush"):
             self.fp.flush()
 
     def setfont(self, font, size):
+        font_bytes = bytes(font, encoding='utf8')
         if font not in self.isofont:
             # reencode font
-            self.fp.write("/PSDraw-%s ISOLatin1Encoding /%s E\n" %\
-                          (font, font))
+            self.fp.write(b"/PSDraw-" + font_bytes +
+                    b" ISOLatin1Encoding /" + font_bytes + b" E\n")
             self.isofont[font] = 1
         # rough
-        self.fp.write("/F0 %d /PSDraw-%s F\n" % (size, font))
+        self.fp.write(bytes("/F0 %d /PSDraw-" % size, encoding='ascii') +
+                font_bytes + b" F\n")
 
     def setink(self, ink):
         print("*** NOT YET IMPLEMENTED ***")
 
     def line(self, xy0, xy1):
         xy = xy0 + xy1
-        self.fp.write("%d %d %d %d Vl\n" % xy)
+        self.fp.write(b"%d %d %d %d Vl\n" % xy)
 
     def rectangle(self, box):
-        self.fp.write("%d %d M %d %d 0 Vr\n" % box)
+        self.fp.write(bytes("%d %d M %d %d 0 Vr\n" % box, encoding='ascii'))
 
     def text(self, xy, text):
         text = "\\(".join(text.split("("))
         text = "\\)".join(text.split(")"))
-        xy = xy + (text,)
-        self.fp.write("%d %d M (%s) S\n" % xy)
+        self.fp.write(bytes("%d %d M (" % xy, encoding='ascii') +
+                bytes(text, encoding='utf8') +
+                b") S\n")
 
     def image(self, box, im, dpi = None):
         "Write an PIL image"
@@ -95,14 +98,15 @@ class PSDraw:
             x = x * ymax / y; y = ymax
         dx = (xmax - x) / 2 + box[0]
         dy = (ymax - y) / 2 + box[1]
-        self.fp.write("gsave\n%f %f translate\n" % (dx, dy))
+        self.fp.write(bytes("gsave\n%f %f translate\n" % (dx, dy),
+            encoding='ascii'))
         if (x, y) != im.size:
             # EpsImagePlugin._save prints the image at (0,0,xsize,ysize)
             sx = x / im.size[0]
             sy = y / im.size[1]
-            self.fp.write("%f %f scale\n" % (sx, sy))
+            self.fp.write(bytes("%f %f scale\n" % (sx, sy), encoding='ascii'))
         EpsImagePlugin._save(im, self.fp, None, 0)
-        self.fp.write("\ngrestore\n")
+        self.fp.write(b"\ngrestore\n")
 
 # --------------------------------------------------------------------
 # Postscript driver
@@ -116,7 +120,7 @@ class PSDraw:
 # Copyright (c) Fredrik Lundh 1994.
 #
 
-EDROFF_PS = """\
+EDROFF_PS = b"""\
 /S { show } bind def
 /P { moveto show } bind def
 /M { moveto } bind def
@@ -145,7 +149,7 @@ EDROFF_PS = """\
 # Copyright (c) Fredrik Lundh 1994.
 #
 
-VDI_PS = """\
+VDI_PS = b"""\
 /Vm { moveto } bind def
 /Va { newpath arcn stroke } bind def
 /Vl { moveto lineto stroke } bind def
@@ -170,7 +174,7 @@ VDI_PS = """\
 # 89-11-21 fl: created (pslist 1.10)
 #
 
-ERROR_PS = """\
+ERROR_PS = b"""\
 /landscape false def
 /errorBUF 200 string def
 /errorNL { currentpoint 10 sub exch pop 72 exch moveto } def

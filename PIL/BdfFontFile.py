@@ -20,8 +20,6 @@
 import Image
 import FontFile
 
-import string
-
 # --------------------------------------------------------------------
 # parse X Bitmap Distribution Format (BDF)
 # --------------------------------------------------------------------

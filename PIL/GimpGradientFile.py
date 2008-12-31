@@ -14,7 +14,6 @@
 #
 
 from math import pi, log, sin, sqrt
-import string
 
 # --------------------------------------------------------------------
 # Stuff to translate curve segments to palette values (derived from
