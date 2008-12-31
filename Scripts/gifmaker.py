@@ -40,8 +40,6 @@
 #
 
 import Image, ImageChops
-import string
-
 from GifImagePlugin import getheader, getdata
 
 # --------------------------------------------------------------------
@@ -100,7 +98,7 @@ def makedelta(fp, sequence):
 
         frames = frames + 1
 
-    fp.write(";")
+    fp.write(b";")
 
     return frames
 

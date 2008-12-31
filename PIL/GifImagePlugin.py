@@ -372,17 +372,17 @@ def getdata(im, offset = (0, 0), **params):
         im.encoderinfo = params
 
         # local image header
-        fp.write("," +
+        fp.write(b"," +
                  o16(offset[0]) +       # offset
                  o16(offset[1]) +
                  o16(im.size[0]) +      # size
                  o16(im.size[1]) +
-                 chr(0) +               # flags
-                 chr(8))                # bits
+                 bytes((0,              # flags
+                 8)))                   # bits
 
         ImageFile._save(im, fp, [("gif", (0,0)+im.size, 0, RAWMODE[im.mode])])
 
-        fp.write("\0") # end of image data
+        fp.write(b"\0") # end of image data
 
     finally:
         del im.encoderinfo

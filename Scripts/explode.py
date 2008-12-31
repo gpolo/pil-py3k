@@ -5,8 +5,10 @@
 # split an animation into a number of frame files
 #
 
+import os
+import sys
+
 import Image
-import os, string, sys
 
 class Interval:
 
@@ -18,18 +20,18 @@ class Interval:
 
         self.hilo = []
 
-        for s in string.split(interval, ","):
-            if not string.strip(s):
+        for s in interval.split(","):
+            if not s.strip():
                 continue
             try:
-                v = string.atoi(s)
+                v = int(s)
                 if v < 0:
                     lo, hi = 0, -v
                 else:
                     lo = hi = v
             except ValueError:
-                i = string.find(s, "-")
-                lo, hi = string.atoi(s[:i]), string.atoi(s[i+1:])
+                i = s.find("-")
+                lo, hi = int(s[:i]), int(s[i+1:])
 
             self.hilo.append((hi, lo))
 
@@ -69,7 +71,7 @@ if not sys.argv[2:]:
 infile = sys.argv[1]
 outfile = sys.argv[2]
 
-frames = Interval(string.join(sys.argv[3:], ","))
+frames = Interval(",".join(sys.argv[3:]))
 
 try:
     # check if outfile contains a placeholder
