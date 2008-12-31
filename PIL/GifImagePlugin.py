@@ -38,7 +38,7 @@ def i16(c):
     return c[0] + (c[1] << 8)
 
 def o16(i):
-    return chr(i&255) + chr(i>>8&255)
+    return bytes((i&255, i>>8&255))
 
 
 # --------------------------------------------------------------------
@@ -279,20 +279,20 @@ def _save(im, fp, filename):
                  + chr(0))
 
     # local image header
-    fp.write("," +
+    fp.write(b"," +
              o16(0) + o16(0) +          # bounding box
              o16(im.size[0]) +          # size
              o16(im.size[1]) +
-             chr(flags) +               # flags
-             chr(8))                    # bits
+             bytes((flags,              # flags
+             8)))                       # bits
 
     imOut.encoderconfig = (8, interlace)
 
     ImageFile._save(imOut, fp, [("gif", (0,0)+im.size, 0, rawmode)])
 
-    fp.write("\0") # end of image data
+    fp.write(b"\0") # end of image data
 
-    fp.write(";") # end of file
+    fp.write(b";") # end of file
 
     try:
         fp.flush()
@@ -324,12 +324,12 @@ def getheader(im, info=None):
     optimize = info and info.get("optimize", 0)
 
     s = [
-        "GIF87a" +              # magic
-        o16(im.size[0]) +       # size
+        b"GIF87a" +          # magic
+        o16(im.size[0]) +    # size
         o16(im.size[1]) +
-        chr(7 + 128) +          # flags: bits + palette
-        chr(0) +                # background
-        chr(0)                  # reserved/aspect
+        bytes((7 + 128,      # flags: bits + palette
+        0,                   # background
+        0))                  # reserved/aspect
     ]
 
     if optimize:

@@ -54,7 +54,6 @@ try:
     core = _imaging
     del _imaging
 except ImportError as v:
-    print("IMPORTERROR!", v)
     core = _imaging_not_installed()
     if str(v)[:20] == "Module use of python" and warnings:
         # The _imaging C module is present, but not compiled for

@@ -35,15 +35,15 @@ import Image, ImageFile, ImagePalette
 # --------------------------------------------------------------------
 # Standard tags
 
-COMMENT = "Comment"
-DATE = "Date"
-EQUIPMENT = "Digitalization equipment"
-FRAMES = "File size (no of images)"
-LUT = "Lut"
-NAME = "Name"
-SCALE = "Scale (x,y)"
-SIZE = "Image size (x*y)"
-MODE = "Image type"
+COMMENT = b"Comment"
+DATE = b"Date"
+EQUIPMENT = b"Digitalization equipment"
+FRAMES = b"File size (no of images)"
+LUT = b"Lut"
+NAME = b"Name"
+SCALE = b"Scale (x,y)"
+SIZE = b"Image size (x*y)"
+MODE = b"Image type"
 
 TAGS = { COMMENT:0, DATE:0, EQUIPMENT:0, FRAMES:0, LUT:0, NAME:0,
          SCALE:0, SIZE:0, MODE:0 }
@@ -130,10 +130,10 @@ class ImImageFile(ImageFile.ImageFile):
             s = self.fp.read(1)
 
             # Some versions of IFUNC uses \n\r instead of \r\n...
-            if s == "\r":
+            if s == b"\r":
                 continue
 
-            if not s or s[0] == chr(0) or s[0] == chr(26):
+            if not s or s[0] == 0 or s[0] == 26:
                 break
 
             # FIXME: this may read whole file if not a text file
@@ -142,9 +142,9 @@ class ImImageFile(ImageFile.ImageFile):
             if len(s) > 100:
                 raise SyntaxError("not an IM file")
 
-            if s[-2:] == '\r\n':
+            if s[-2:] == b'\r\n':
                 s = s[:-2]
-            elif s[-1:] == '\n':
+            elif s[-1:] == b'\n':
                 s = s[:-1]
 
             try:
@@ -158,12 +158,14 @@ class ImImageFile(ImageFile.ImageFile):
 
                 # Convert value as appropriate
                 if k in [FRAMES, SCALE, SIZE]:
-                    v = v.replace("*", ",")
-                    v = tuple(map(number, v.split(",")))
+                    v = v.replace(b"*", b",")
+                    v = tuple(map(number, v.split(b",")))
                     if len(v) == 1:
                         v = v[0]
-                elif k == MODE and v in OPEN:
-                    v, self.rawmode = OPEN[v]
+                elif k == MODE:
+                    v = v.decode('ascii')
+                    if v in OPEN:
+                        v, self.rawmode = OPEN[v]
 
                 # Add to dictionary. Note that COMMENT tags are
                 # combined into a list of strings.
@@ -190,7 +192,7 @@ class ImImageFile(ImageFile.ImageFile):
         self.mode = self.info[MODE]
 
         # Skip forward to start of image data
-        while s and s[0] != chr(26):
+        while s and s[0] != 26:
             s = self.fp.read(1)
         if not s:
             raise SyntaxError("File truncated")
@@ -202,7 +204,7 @@ class ImImageFile(ImageFile.ImageFile):
             linear = 1 # linear greyscale palette
             for i in range(256):
                 if palette[i] == palette[i+256] == palette[i+512]:
-                    if palette[i] != chr(i):
+                    if palette[i] != i:
                         linear = 0
                 else:
                     greyscale = 0
@@ -265,7 +267,7 @@ class ImImageFile(ImageFile.ImageFile):
         else:
             bits = 8 * len(self.mode)
 
-        size = ((self.size[0] * bits + 7) / 8) * self.size[1]
+        size = ((self.size[0] * bits + 7) // 8) * self.size[1]
         offs = self.__offset + frame * size
 
         self.fp = self.__fp
@@ -313,14 +315,15 @@ def _save(im, fp, filename, check=0):
     if check:
         return check
 
-    fp.write("Image type: %s image\r\n" % type)
+    fp.write(bytes("Image type: %s image\r\n" % type, encoding='ascii'))
     if filename:
-        fp.write("Name: %s\r\n" % filename)
-    fp.write("Image size (x*y): %d*%d\r\n" % im.size)
-    fp.write("File size (no of images): %d\r\n" % frames)
+        fp.write(b"Name: " + bytes(filename, encoding='utf8') + b"\r\n")
+    fp.write(bytes("Image size (x*y): %d*%d\r\n" % im.size, encoding='ascii'))
+    fp.write(bytes("File size (no of images): %d\r\n" % frames,
+        encoding='ascii'))
     if im.mode == "P":
-        fp.write("Lut: 1\r\n")
-    fp.write("\000" * (511-fp.tell()) + "\032")
+        fp.write(b"Lut: 1\r\n")
+    fp.write(b"\000" * (511-fp.tell()) + b"\032")
     if im.mode == "P":
         fp.write(im.im.getpalette("RGB", "RGB;L")) # 768 bytes
     ImageFile._save(im, fp, [("raw", (0,0)+im.size, 0, (rawmode, 0, -1))])

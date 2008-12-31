@@ -103,18 +103,18 @@ class PpmImageFile(ImageFile.ImageFile):
 
 def _save(im, fp, filename):
     if im.mode == "1":
-        rawmode, head = "1;I", "P4"
+        rawmode, head = "1;I", b"P4"
     elif im.mode == "L":
-        rawmode, head = "L", "P5"
+        rawmode, head = "L", b"P5"
     elif im.mode == "RGB":
-        rawmode, head = "RGB", "P6"
+        rawmode, head = "RGB", b"P6"
     elif im.mode == "RGBA":
-        rawmode, head = "RGB", "P6"
+        rawmode, head = "RGB", b"P6"
     else:
         raise IOError("cannot write mode %s as PPM" % im.mode)
-    fp.write(head + "\n%d %d\n" % im.size)
-    if head != "P4":
-        fp.write("255\n")
+    fp.write(head + bytes("\n%d %d\n" % im.size, encoding='ascii'))
+    if head != b"P4":
+        fp.write(b"255\n")
     ImageFile._save(im, fp, [("raw", (0,0)+im.size, 0, (rawmode, 0, 1))])
 
     # ALTERNATIVE: save via builtin debug function

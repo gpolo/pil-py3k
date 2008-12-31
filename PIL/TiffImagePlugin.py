@@ -394,19 +394,19 @@ class ImageFileDirectory:
                         if v >= 65536:
                             typ = 4
                 if typ == 3:
-                    data = "".join(list(map(o16, value)))
+                    data = b"".join(list(map(o16, value)))
                 else:
-                    data = "".join(list(map(o32, value)))
+                    data = b"".join(list(map(o32, value)))
 
             # figure out if data fits into the directory
             if len(data) == 4:
-                append((tag, typ, len(value), data, ""))
+                append((tag, typ, len(value), data, b""))
             elif len(data) < 4:
-                append((tag, typ, len(value), data + (4-len(data))*"\0", ""))
+                append((tag, typ, len(value), data + (4-len(data))*b"\0", b""))
             else:
                 count = len(value)
                 if typ == 5:
-                    count = count / 2        # adjust for rational data field
+                    count = count // 2        # adjust for rational data field
                 append((tag, typ, count, o32(offset), data))
                 offset = offset + len(data)
                 if offset & 1:
@@ -424,13 +424,13 @@ class ImageFileDirectory:
             if Image.DEBUG > 1:
                 print(tag, typ, count, repr(value), repr(data))
             fp.write(o16(tag) + o16(typ) + o32(count) + value)
-        fp.write("\0\0\0\0") # end of directory
+        fp.write(b"\0\0\0\0") # end of directory
 
         # pass 3: write auxiliary data to file
         for tag, typ, count, value, data in directory:
             fp.write(data)
             if len(data) & 1:
-                fp.write("\0")
+                fp.write(b"\0")
 
         return offset
 
@@ -578,8 +578,8 @@ class TiffImageFile(ImageFile.ImageFile):
         ydpi = getscalar(Y_RESOLUTION, (1, 1))
 
         if xdpi and ydpi and getscalar(RESOLUTION_UNIT, 1) == 1:
-            xdpi = xdpi[0] / (xdpi[1] or 1)
-            ydpi = ydpi[0] / (ydpi[1] or 1)
+            xdpi = xdpi[0] // (xdpi[1] or 1)
+            ydpi = ydpi[0] // (ydpi[1] or 1)
             self.info["dpi"] = xdpi, ydpi
 
         # build tile descriptors
@@ -630,7 +630,7 @@ class TiffImageFile(ImageFile.ImageFile):
 
         # fixup palette descriptor
         if self.mode == "P":
-            palette = [chr(a / 256) for a in self.tag[COLORMAP]]
+            palette = [chr(a // 256) for a in self.tag[COLORMAP]]
             self.palette = ImagePalette.raw("RGB;L", "".join(palette))
 
 #
@@ -738,7 +738,7 @@ def _save(im, fp, filename):
         ifd[COLORMAP] = tuple([ord(v) * 256 for v in lut])
 
     # data orientation
-    stride = len(bits) * ((im.size[0]*bits[0]+7)/8)
+    stride = len(bits) * ((im.size[0]*bits[0]+7)//8)
     ifd[ROWSPERSTRIP] = im.size[1]
     ifd[STRIPBYTECOUNTS] = stride * im.size[1]
     ifd[STRIPOFFSETS] = 0 # this is adjusted by IFD writer

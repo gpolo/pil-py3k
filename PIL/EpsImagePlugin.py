@@ -30,10 +30,10 @@ def i32(c):
     return c[0] + (c[1] << 8) + (c[2] << 16) + (c[3] << 24)
 
 def o32(i):
-    return chr(i&255) + chr(i>>8&255) + chr(i>>16&255) + chr(i>>24&255)
+    return bytes((i&255, i>>8&255, i>>16&255, i>>24&255))
 
-split = re.compile(r"^%%([^:]*):[ \t]*(.*)[ \t]*$")
-field = re.compile(r"^%[%!\w]([^:]*)[ \t]*$")
+split = re.compile(br"^%%([^:]*):[ \t]*(.*)[ \t]*$")
+field = re.compile(br"^%[%!\w]([^:]*)[ \t]*$")
 
 def Ghostscript(tile, size, fp):
     """Render an image using Ghostscript (Unix only)"""
@@ -69,7 +69,7 @@ def Ghostscript(tile, size, fp):
             if not s:
                 break
             length = length - len(s)
-            gs.write(s)
+            gs.write(s.decode('utf8'))
         status = gs.close()
         if status:
             raise IOError("gs failed (status %d)" % status)
@@ -99,24 +99,24 @@ class PSFile:
             pos = pos - 1
         return pos
     def readline(self):
-        s = ""
+        s = b""
         if self.char:
             c = self.char
             self.char = None
         else:
             c = self.fp.read(1)
-        while c not in "\r\n":
+        while c not in b"\r\n":
             s = s + c
             c = self.fp.read(1)
-        if c == "\r":
+        if c == b"\r":
             self.char = self.fp.read(1)
-            if self.char == "\n":
+            if self.char == b"\n":
                 self.char = None
-        return s + "\n"
+        return s + b"\n"
 
 
 def _accept(prefix):
-    return prefix[:4] == "%!PS" or i32(prefix) == 0xC6D3D0C5
+    return prefix[:4] == b"%!PS" or i32(prefix) == 0xC6D3D0C5
 
 ##
 # Image plugin for Encapsulated Postscript.  This plugin supports only
@@ -137,7 +137,7 @@ class EpsImageFile(ImageFile.ImageFile):
 
         # HEAD
         s = fp.read(512)
-        if s[:4] == "%!PS":
+        if s[:4] == b"%!PS":
             offset = 0
             fp.seek(0, 2)
             length = fp.tell()
@@ -165,9 +165,9 @@ class EpsImageFile(ImageFile.ImageFile):
             if len(s) > 255:
                 raise SyntaxError("not an EPS file")
 
-            if s[-2:] == '\r\n':
+            if s[-2:] == b'\r\n':
                 s = s[:-2]
-            elif s[-1:] == '\n':
+            elif s[-1:] == b'\n':
                 s = s[:-1]
 
             try:
@@ -178,7 +178,7 @@ class EpsImageFile(ImageFile.ImageFile):
             if m:
                 k, v = m.group(1, 2)
                 self.info[k] = v
-                if k == "BoundingBox":
+                if k == b"BoundingBox":
                     try:
                         # Note: The DSC spec says that BoundingBox
                         # fields should be integers, but some drivers
@@ -196,9 +196,9 @@ class EpsImageFile(ImageFile.ImageFile):
 
                 if m:
                     k = m.group(1)
-                    if k == "EndComments":
+                    if k == b"EndComments":
                         break
-                    if k[:8] == "PS-Adobe":
+                    if k[:8] == b"PS-Adobe":
                         self.info[k[:8]] = k[9:]
                     else:
                         self.info[k] = ""
@@ -207,27 +207,26 @@ class EpsImageFile(ImageFile.ImageFile):
 
             s = fp.readline()
 
-            if s[:1] != "%":
+            if s[:1] != b"%":
                 break
 
 
         #
         # Scan for an "ImageData" descriptor
 
-        while s[0] == "%":
+        while s[0] == b"%":
 
             if len(s) > 255:
                 raise SyntaxError("not an EPS file")
 
-            if s[-2:] == '\r\n':
+            if s[-2:] == b'\r\n':
                 s = s[:-2]
-            elif s[-1:] == '\n':
+            elif s[-1:] == b'\n':
                 s = s[:-1]
 
-            if s[:11] == "%ImageData:":
+            if s[:11] == b"%ImageData:":
 
-                [x, y, bi, mo, z3, z4, en, id] =\
-                    s[11:].split(None, 7)
+                [x, y, bi, mo, z3, z4, en, id] = s[11:].split(None, 7)
 
                 x = int(x); y = int(y)
 
@@ -253,7 +252,7 @@ class EpsImageFile(ImageFile.ImageFile):
                 else:
                     break
 
-                if id[:1] == id[-1:] == '"':
+                if id[:1] == id[-1:] == b'"':
                     id = id[1:-1]
 
                 # Scan forward to the actual image data
@@ -309,31 +308,34 @@ def _save(im, fp, filename, eps=1):
     if eps:
         #
         # write EPS header
-        fp.write("%!PS-Adobe-3.0 EPSF-3.0\n")
-        fp.write("%%Creator: PIL 0.1 EpsEncode\n")
-        #fp.write("%%CreationDate: %s"...)
-        fp.write("%%%%BoundingBox: 0 0 %d %d\n" % im.size)
-        fp.write("%%Pages: 1\n")
-        fp.write("%%EndComments\n")
-        fp.write("%%Page: 1 1\n")
-        fp.write("%%ImageData: %d %d " % im.size)
-        fp.write("%d %d 0 1 1 \"%s\"\n" % operator)
+        fp.write(b"%!PS-Adobe-3.0 EPSF-3.0\n")
+        fp.write(b"%%Creator: PIL 0.1 EpsEncode\n")
+        #fp.write(b"%%CreationDate: %s"...)
+        fp.write(bytes("%%%%BoundingBox: 0 0 %d %d\n" % im.size,
+            encoding='ascii'))
+        fp.write(b"%%Pages: 1\n")
+        fp.write(b"%%EndComments\n")
+        fp.write(b"%%Page: 1 1\n")
+        fp.write(bytes("%%ImageData: %d %d " % im.size, encoding='ascii'))
+        fp.write(bytes("%d %d 0 1 1 \"%s\"\n" % operator, encoding='ascii'))
 
     #
     # image header
-    fp.write("gsave\n")
-    fp.write("10 dict begin\n")
-    fp.write("/buf %d string def\n" % (im.size[0] * operator[1]))
-    fp.write("%d %d scale\n" % im.size)
-    fp.write("%d %d 8\n" % im.size) # <= bits
-    fp.write("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1], im.size[1]))
-    fp.write("{ currentfile buf readhexstring pop } bind\n")
-    fp.write("%s\n" % operator[2])
+    fp.write(b"gsave\n")
+    fp.write(b"10 dict begin\n")
+    fp.write(bytes("/buf %d string def\n" % (im.size[0] * operator[1]),
+        encoding='ascii'))
+    fp.write(bytes("%d %d scale\n" % im.size, encoding='ascii'))
+    fp.write(bytes("%d %d 8\n" % im.size, encoding='ascii')) # <= bits
+    fp.write(bytes("[%d 0 0 -%d 0 %d]\n" % (im.size[0], im.size[1],
+        im.size[1]), encoding='ascii'))
+    fp.write(b"{ currentfile buf readhexstring pop } bind\n")
+    fp.write(bytes("%s\n" % operator[2], encoding='ascii'))
 
     ImageFile._save(im, fp, [("eps", (0,0)+im.size, 0, None)])
 
-    fp.write("\n%%%%EndBinary\n")
-    fp.write("grestore end\n")
+    fp.write(b"\n%%%%EndBinary\n")
+    fp.write(b"grestore end\n")
     fp.flush()
 
 #

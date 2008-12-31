@@ -176,10 +176,10 @@ class DibImageFile(BmpImageFile):
 # Write BMP file
 
 def o16(i):
-    return chr(i&255) + chr(i>>8&255)
+    return bytes((i&255, i>>8&255))
 
 def o32(i):
-    return chr(i&255) + chr(i>>8&255) + chr(i>>16&255) + chr(i>>24&255)
+    return bytes((i&255, i>>8&255, i>>16&255, i>>24&255))
 
 SAVE = {
     "1": ("1", 1, 2),
@@ -198,13 +198,13 @@ def _save(im, fp, filename, check=0):
     if check:
         return check
 
-    stride = ((im.size[0]*bits+7)/8+3)&(~3)
+    stride = ((im.size[0]*bits+7)//8+3)&(~3)
     header = 40 # or 64 for OS/2 version 2
     offset = 14 + header + colors * 4
     image  = stride * im.size[1]
 
     # bitmap header
-    fp.write("BM" +                     # file type (magic)
+    fp.write(b"BM" +                     # file type (magic)
              o32(offset+image) +        # file size
              o32(0) +                   # reserved
              o32(offset))               # image data offset
@@ -221,7 +221,7 @@ def _save(im, fp, filename, check=0):
              o32(colors) +              # colors used
              o32(colors))               # colors important
 
-    fp.write("\000" * (header - 40))    # padding (for OS/2 format)
+    fp.write(b"\000" * (header - 40))    # padding (for OS/2 format)
 
     if im.mode == "1":
         for i in (0, 255):

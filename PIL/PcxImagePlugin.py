@@ -112,7 +112,7 @@ SAVE = {
 }
 
 def o16(i):
-    return chr(i&255) + chr(i>>8&255)
+    return bytes((i&255, i>>8&255))
 
 def _save(im, fp, filename, check=0):
 
@@ -125,7 +125,7 @@ def _save(im, fp, filename, check=0):
         return check
 
     # bytes per plane
-    stride = (im.size[0] * bits + 7) / 8
+    stride = (im.size[0] * bits + 7) // 8
 
     # under windows, we could determine the current screen size with
     # "Image.core.display_mode()[1]", but I think that's overkill...
@@ -136,11 +136,11 @@ def _save(im, fp, filename, check=0):
 
     # PCX header
     fp.write(
-        chr(10) + chr(version) + chr(1) + chr(bits) + o16(0) +
+        bytes((10, version, 1, bits)) + o16(0) +
         o16(0) + o16(im.size[0]-1) + o16(im.size[1]-1) + o16(dpi[0]) +
-        o16(dpi[1]) + chr(0)*24 + chr(255)*24 + chr(0) + chr(planes) +
+        o16(dpi[1]) + bytes([0]*24) + bytes([255]*24) + bytes((0, planes)) +
         o16(stride) + o16(1) + o16(screen[0]) + o16(screen[1]) +
-        chr(0)*54
+        bytes([0]*54)
         )
 
     assert fp.tell() == 128
@@ -150,13 +150,13 @@ def _save(im, fp, filename, check=0):
 
     if im.mode == "P":
         # colour palette
-        fp.write(chr(12))
+        fp.write(bytes([12]))
         fp.write(im.im.getpalette("RGB", "RGB")) # 768 bytes
     elif im.mode == "L":
         # greyscale palette
-        fp.write(chr(12))
+        fp.write(bytes([12]))
         for i in range(256):
-            fp.write(chr(i)*3)
+            fp.write(bytes([i] * 3))
 
 # --------------------------------------------------------------------
 # registry
