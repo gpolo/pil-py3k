@@ -73,7 +73,7 @@ class IptcImageFile(ImageFile.ImageFile):
             raise SyntaxError("invalid IPTC/NAA file")
 
         # field size
-        size = ord(s[3])
+        size = s[3]
         if size > 132:
             raise IOError("illegal field length in IPTC/NAA file")
         elif size == 128:
@@ -170,7 +170,7 @@ class IptcImageFile(ImageFile.ImageFile):
         if encoding == "raw":
             # To simplify access to the extracted file,
             # prepend a PPM header
-            o.write("P5\n%d %d\n255\n" % self.size)
+            o.write(bytes("P5\n%d %d\n255\n" % self.size, encoding='ascii'))
         while 1:
             type, size = self.field()
             if type != (8, 10):

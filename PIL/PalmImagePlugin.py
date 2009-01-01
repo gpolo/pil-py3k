@@ -110,7 +110,7 @@ _COMPRESSION_TYPES = {
     }
 
 def o16b(i):
-    return chr(i>>8&255) + chr(i&255)
+    return bytes((i>>8&255, i&255))
 
 #
 # --------------------------------------------------------------------
@@ -188,28 +188,27 @@ def _save(im, fp, filename, check=0):
         colormapsize = 0
 
     if "offset" in im.info:
-        offset = (rowbytes * rows + 16 + 3 + colormapsize) / 4;
+        offset = (rowbytes * rows + 16 + 3 + colormapsize) // 4;
     else:
         offset = 0
 
     fp.write(o16b(cols) + o16b(rows) + o16b(rowbytes) + o16b(flags))
-    fp.write(chr(bpp))
-    fp.write(chr(version))
-    fp.write(o16b(offset))
-    fp.write(chr(transparent_index))
-    fp.write(chr(compression_type))
-    fp.write(o16b(0))   # reserved by Palm
+    fp.write(bytes((bpp, version)) + o16b(offset) + bytes((transparent_index,
+        compression_type)) +
+        o16b(0))   # reserved by Palm
 
     # now write colormap if necessary
 
     if colormapsize > 0:
         fp.write(o16b(256))
         for i in range(256):
-            fp.write(chr(i))
+            fp.write(bytes([i]))
             if colormapmode == 'RGB':
-                fp.write(chr(colormap[3 * i]) + chr(colormap[3 * i + 1]) + chr(colormap[3 * i + 2]))
+                fp.write(bytes((colormap[3 * i], colormap[3 * i + 1],
+                    colormap[3 * i + 2])))
             elif colormapmode == 'RGBA':
-                fp.write(chr(colormap[4 * i]) + chr(colormap[4 * i + 1]) + chr(colormap[4 * i + 2]))
+                fp.write(bytes((colormap[4 * i], colormap[4 * i + 1],
+                    colormap[4 * i + 2])))
 
     # now convert data to raw form
     ImageFile._save(im, fp, [("raw", (0,0)+im.size, 0, (rawmode, rowbytes, 1))])

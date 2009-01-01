@@ -76,10 +76,10 @@ class PcxImageFile(ImageFile.ImageFile):
             # FIXME: hey, this doesn't work with the incremental loader !!!
             self.fp.seek(-769, 2)
             s = self.fp.read(769)
-            if len(s) == 769 and ord(s[0]) == 12:
+            if len(s) == 769 and s[0] == 12:
                 # check if the palette is linear greyscale
                 for i in range(256):
-                    if s[i*3+1:i*3+4] != chr(i)*3:
+                    if s[i*3+1:i*3+4] != i*3:
                         mode = rawmode = "P"
                         break
                 if mode == "P":

@@ -27,10 +27,10 @@ import Image, ImageFile
 # helpers
 
 def i16(c):
-    return ord(c[0]) + (ord(c[1])<<8)
+    return c[0] + (c[1] << 8)
 
 def i32(c):
-    return ord(c[0]) + (ord(c[1])<<8) + (ord(c[2])<<16) + (ord(c[3])<<24)
+    return c[0] + (c[1] << 8) + (c[2] << 16) + (c[3] << 24)
 
 ##
 # Image plugin for PIXAR raster images.
@@ -44,7 +44,7 @@ class PixarImageFile(ImageFile.ImageFile):
 
         # assuming a 4-byte magic label (FIXME: add "_accept" hook)
         s = self.fp.read(4)
-        if s != "\200\350\000\000":
+        if s != b"\200\350\000\000":
             raise SyntaxError("not a PIXAR file")
 
         # read rest of header

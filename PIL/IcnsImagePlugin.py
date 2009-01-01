@@ -28,7 +28,7 @@ def read_32t(fobj, xxx_todo_changeme, xxx_todo_changeme1):
     (width, height) = xxx_todo_changeme1
     fobj.seek(start)
     sig = fobj.read(4)
-    if sig != '\x00\x00\x00\x00':
+    if sig != b'\x00\x00\x00\x00':
         raise SyntaxError('Unknown signature, expecting 0x00000000')
     return read_32(fobj, (start + 4, length - 4), (width, height))
 
@@ -54,7 +54,7 @@ def read_32(fobj, xxx_todo_changeme2, size):
                 byte = fobj.read(1)
                 if not byte:
                     break
-                byte = ord(byte)
+                byte = byte
                 if byte & 0x80:
                     blocksize = byte - 125
                     byte = fobj.read(1)
@@ -71,7 +71,7 @@ def read_32(fobj, xxx_todo_changeme2, size):
                     "Error reading %r channel [%r]" % (channel, bytesleft)
                     )
             band = Image.frombuffer(
-                "L", size, "".join(data), "raw", "L", 0, 1
+                "L", size, b"".join(data), "raw", "L", 0, 1
                 )
             im.im.putband(band.im, band_ix)
     return {"RGB": im}

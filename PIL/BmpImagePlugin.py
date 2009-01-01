@@ -225,10 +225,10 @@ def _save(im, fp, filename, check=0):
 
     if im.mode == "1":
         for i in (0, 255):
-            fp.write(chr(i) * 4)
+            fp.write(bytes([i] * 4))
     elif im.mode == "L":
         for i in range(256):
-            fp.write(chr(i) * 4)
+            fp.write(bytes([i] * 4))
     elif im.mode == "P":
         fp.write(im.im.getpalette("RGB", "BGRX"))
 

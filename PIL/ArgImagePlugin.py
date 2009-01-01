@@ -236,7 +236,7 @@ class ArgStream(ChunkStream):
         self.im = Image.core.new(mode, size)
         self.decoder = Image.core.zip_decoder(rawmode)
         self.decoder.setimage(self.im, (0,0) + size)
-        self.data = ""
+        self.data = b""
 
         return s
 
@@ -252,7 +252,7 @@ class ArgStream(ChunkStream):
         size, mode, rawmode = self.__getmodesize(s)
 
         # delta header
-        diff = ord(s[13])
+        diff = s[13]
         offs = i32(s[14:18]), i32(s[18:22])
 
         bbox = offs + (offs[0]+size[0], offs[1]+size[1])
@@ -269,7 +269,7 @@ class ArgStream(ChunkStream):
         self.decoder = Image.core.zip_decoder(rawmode)
         self.decoder.setimage(self.im, (0,0) + size)
 
-        self.data = ""
+        self.data = b""
 
         return s
 
@@ -289,7 +289,7 @@ class ArgStream(ChunkStream):
         self.im = Image.core.new(mode, size)
         self.decoder = Image.core.jpeg_decoder(rawmode)
         self.decoder.setimage(self.im, (0,0) + size)
-        self.data = ""
+        self.data = b""
 
         return s
 
@@ -309,7 +309,7 @@ class ArgStream(ChunkStream):
         self.im = Image.core.new(mode, size)
         self.decoder = Image.core.raw_decoder(rawmode)
         self.decoder.setimage(self.im, (0,0) + size)
-        self.data = ""
+        self.data = b""
 
         return s
 
