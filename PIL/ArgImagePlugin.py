@@ -67,7 +67,7 @@ class ArgStream(ChunkStream):
         s = self.fp.read(bytes)
         self.size = i32(s), i32(s[4:])
         try:
-            self.mode, self.rawmode = _MODES[(ord(s[8]), ord(s[9]))]
+            self.mode, self.rawmode = _MODES[(s[8], s[9])]
         except:
             raise SyntaxError("unknown ARG mode")
 
@@ -154,14 +154,14 @@ class ArgStream(ChunkStream):
         size = i32(s), i32(s[4:])
 
         try:
-            mode, rawmode = _MODES[(ord(s[8]), ord(s[9]))]
+            mode, rawmode = _MODES[(s[8], s[9])]
         except:
             raise SyntaxError("unknown image mode")
 
         if full:
-            if ord(s[12]):
+            if s[12]:
                 pass # interlace not yet supported
-            if ord(s[11]):
+            if s[11]:
                 raise SyntaxError("unknown filter category")
 
         return size, mode, rawmode

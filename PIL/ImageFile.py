@@ -507,7 +507,7 @@ def _save(im, fp, tile):
 
 def _safe_read(fp, size):
     if size <= 0:
-        return ""
+        return b""
     if size <= SAFEBLOCK:
         return fp.read(size)
     data = []
@@ -517,4 +517,4 @@ def _safe_read(fp, size):
             break
         data.append(block)
         size = size - len(block)
-    return "".join(data)
+    return b"".join(data)

@@ -215,7 +215,7 @@ class PngStream(ChunkStream):
         # transparency
         s = ImageFile._safe_read(self.fp, len)
         if self.im_mode == "P":
-            i = s.find(chr(0))
+            i = s.find(b"\x00")
             if i >= 0:
                 self.im_info["transparency"] = i
         elif self.im_mode == "L":
