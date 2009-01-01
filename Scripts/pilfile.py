@@ -17,7 +17,6 @@
 # 0.4 2003-09-30 fl   Expand wildcards on Windows; robustness tweaks
 #
 
-import site
 import getopt, glob, sys
 
 import Image

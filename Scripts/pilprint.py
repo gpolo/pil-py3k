@@ -76,7 +76,7 @@ for file in argv:
         if printer:
             fp = os.popen(printer, "w")
         else:
-            fp = sys.stdout
+            fp = sys.stdout.buffer
 
         ps = PSDraw.PSDraw(fp)
 

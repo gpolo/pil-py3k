@@ -13,8 +13,8 @@
 # 0.5   98-12-30 fl     Fixed -f option (from Anthony Baxter)
 #
 
-import site
-import getopt, string, sys
+import sys
+import getopt
 
 import Image
 
@@ -77,7 +77,7 @@ for o, a in opt:
     elif o == "-o":
         options["optimize"] = 1
     elif o == "-q":
-        options["quality"] = string.atoi(a)
+        options["quality"] = int(a)
 
 if len(argv) != 2:
     usage()

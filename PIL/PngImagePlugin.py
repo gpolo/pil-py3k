@@ -479,28 +479,28 @@ def _save(im, fp, filename, chunk=putchunk, check=0):
                 0)))                              # 12: interlace flag
 
     if im.mode == "P":
-        chunk(fp, "PLTE", im.im.getpalette("RGB"))
+        chunk(fp, b"PLTE", im.im.getpalette("RGB"))
 
     if "transparency" in im.encoderinfo:
         if im.mode == "P":
             transparency = max(0, min(255, im.encoderinfo["transparency"]))
-            chunk(fp, "tRNS", chr(255) * transparency + chr(0))
+            chunk(fp, b"tRNS", bytes([255] * transparency) + bytes([0]))
         elif im.mode == "L":
             transparency = max(0, min(65535, im.encoderinfo["transparency"]))
-            chunk(fp, "tRNS", o16(transparency))
+            chunk(fp, b"tRNS", o16(transparency))
         else:
             raise IOError("cannot use transparency for this mode")
 
     if 0:
         # FIXME: to be supported some day
-        chunk(fp, "gAMA", o32(int(gamma * 100000.0)))
+        chunk(fp, b"gAMA", o32(int(gamma * 100000.0)))
 
     dpi = im.encoderinfo.get("dpi")
     if dpi:
-        chunk(fp, "pHYs",
+        chunk(fp, b"pHYs",
               o32(int(dpi[0] / 0.0254 + 0.5)),
               o32(int(dpi[1] / 0.0254 + 0.5)),
-              chr(1))
+              bytes([1]))
 
     info = im.encoderinfo.get("pnginfo")
     if info:
