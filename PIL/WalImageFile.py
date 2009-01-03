@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-#
 # The Python Imaging Library.
 # $Id: WalImageFile.py 2134 2004-10-06 08:55:20Z fredrik $
 #
@@ -69,7 +67,7 @@ def open(filename):
 
 
 quake2palette = (
-    # default palette taken from piffo 0.93 by Hans Häggström
+    # default palette taken from piffo 0.93 by Hans HÃ¤ggstrÃ¶m
     b"\x01\x01\x01\x0b\x0b\x0b\x12\x12\x12\x17\x17\x17\x1b\x1b\x1b\x1e"
     b"\x1e\x1e\x22\x22\x22\x26\x26\x26\x29\x29\x29\x2c\x2c\x2c\x2f\x2f"
     b"\x2f\x32\x32\x32\x35\x35\x35\x37\x37\x37\x3a\x3a\x3a\x3c\x3c\x3c"
@@ -121,6 +119,7 @@ quake2palette = (
 )
 
 if __name__ == "__main__":
-    im = open("../hacks/sample.wal")
-    print(im.info, im.mode, im.size)
-    im.save("../out.png")
+    #im = open("../hacks/sample.wal")
+    #print(im.info, im.mode, im.size)
+    #im.save("../out.png")
+    pass
