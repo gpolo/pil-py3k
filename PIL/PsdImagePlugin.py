@@ -100,7 +100,7 @@ class PsdImageFile(ImageFile.ImageFile):
             while self.fp.tell() < end:
                 signature = read(4)
                 id = i16(read(2))
-                name = read(ord(read(1)))
+                name = read(read(1)[0])
                 if not (len(name) & 1):
                     read(1) # padding
                 data = read(i32(read(4)))

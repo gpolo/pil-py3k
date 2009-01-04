@@ -137,7 +137,7 @@ class GifImageFile(ImageFile.ImageFile):
                 #
                 s = self.fp.read(1)
                 block = self.data()
-                if s == 249:
+                if s[0] == 249:
                     #
                     # graphic control extension
                     #

@@ -54,7 +54,7 @@ def read_32(fobj, xxx_todo_changeme2, size):
                 byte = fobj.read(1)
                 if not byte:
                     break
-                byte = byte
+                byte = byte[0]
                 if byte & 0x80:
                     blocksize = byte - 125
                     byte = fobj.read(1)
