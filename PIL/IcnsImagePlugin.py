@@ -89,20 +89,20 @@ class IcnsFile:
 
     SIZES = {
         (128, 128): [
-            ('it32', read_32t),
-            ('t8mk', read_mk),
+            (b'it32', read_32t),
+            (b't8mk', read_mk),
         ],
         (48, 48): [
-            ('ih32', read_32),
-            ('h8mk', read_mk),
+            (b'ih32', read_32),
+            (b'h8mk', read_mk),
         ],
         (32, 32): [
-            ('il32', read_32),
-            ('l8mk', read_mk),
+            (b'il32', read_32),
+            (b'l8mk', read_mk),
         ],
         (16, 16): [
-            ('is32', read_32),
-            ('s8mk', read_mk),
+            (b'is32', read_32),
+            (b's8mk', read_mk),
         ],
     }
 
@@ -114,7 +114,7 @@ class IcnsFile:
         self.dct = dct = {}
         self.fobj = fobj
         sig, filesize = nextheader(fobj)
-        if sig != 'icns':
+        if sig != b'icns':
             raise SyntaxError('not an icns file')
         i = HEADERSIZE
         while i < filesize:
@@ -127,7 +127,7 @@ class IcnsFile:
 
     def itersizes(self):
         sizes = []
-        for size, fmts in list(self.SIZES.items()):
+        for size, fmts in self.SIZES.items():
             for (fmt, reader) in fmts:
                 if fmt in self.dct:
                     sizes.append(size)
