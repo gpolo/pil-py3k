@@ -51,7 +51,7 @@ class ImtImageFile(ImageFile.ImageFile):
             if not s:
                 break
 
-            if s == chr(12):
+            if s[0] == 12:
 
                 # image data begins
                 self.tile = [("raw", (0,0)+self.size,

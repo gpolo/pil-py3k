@@ -128,7 +128,7 @@ class BmpImageFile(ImageFile.ImageFile):
                 indices = list(range(colors))
             for i in indices:
                 rgb = read(lutsize)[:3]
-                if rgb != chr(i)*3:
+                if rgb != bytes([i] * 3):
                     greyscale = 0
                 palette.append(rgb)
             if greyscale:

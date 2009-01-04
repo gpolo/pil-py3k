@@ -205,7 +205,7 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.load_end()
 
 
-Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == 'icns')
+Image.register_open("ICNS", IcnsImageFile, lambda x: x[:4] == b'icns')
 Image.register_extension("ICNS", '.icns')
 
 if __name__ == '__main__':
