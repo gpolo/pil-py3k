@@ -89,8 +89,10 @@ class ImageFont:
             raise SyntaxError("Not a PILfont file")
         d = file.readline().split(b";")
         self.info = [] # FIXME: should be a dictionary
-        s = file.readline()
-        while s and s != b"DATA\n":
+        while True:
+            s = file.readline()
+            if not s or s == b"DATA\n":
+                break
             self.info.append(s)
 
         # read PILfont metrics

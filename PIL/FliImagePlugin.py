@@ -61,7 +61,7 @@ class FliImageFile(ImageFile.ImageFile):
         self.info["duration"] = duration
 
         # look for palette
-        palette = [(a,a,a) for a in list(range(256))]
+        palette = [(a,a,a) for a in range(256)]
 
         s = self.fp.read(16)
 
@@ -80,8 +80,8 @@ class FliImageFile(ImageFile.ImageFile):
             elif i16(s[4:6]) == 4:
                 self._palette(palette, 0)
 
-        palette = [chr(r_g_b[0])+chr(r_g_b[1])+chr(r_g_b[2]) for r_g_b in palette]
-        self.palette = ImagePalette.raw("RGB", "".join(palette))
+        palette = [bytes(r_g_b) for r_g_b in palette]
+        self.palette = ImagePalette.raw("RGB", b"".join(palette))
 
         # set things up to decode first frame
         self.frame = -1
@@ -104,7 +104,7 @@ class FliImageFile(ImageFile.ImageFile):
                 r = s[n] << shift
                 g = s[n+1] << shift
                 b = s[n+2] << shift
-                palette[i] = (r, g, b)
+                palette[i] = bytes((r, g, b))
                 i = i + 1
 
     def seek(self, frame):

@@ -28,7 +28,7 @@ class ImagePalette:
     def __init__(self, mode = "RGB", palette = None):
         self.mode = mode
         self.rawmode = None # if set, palette contains raw data
-        self.palette = palette or list(range(256))*len(self.mode)
+        self.palette = palette or bytes(list(range(256)) * len(self.mode))
         self.colors = {}
         self.dirty = None
         if len(self.mode)*256 != len(self.palette):
